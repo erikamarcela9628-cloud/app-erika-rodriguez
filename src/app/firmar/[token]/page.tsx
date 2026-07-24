@@ -1,0 +1,122 @@
+import { notFound } from 'next/navigation'
+import CanvasFirmaWrapper from './CanvasFirmaWrapper'
+import { supabaseServer } from '@/lib/supabaseServer'
+import Image from 'next/image'
+
+interface PageProps {
+  params: Promise<{
+    token: string
+  }>
+}
+
+export default async function FirmarContratoPage({ params }: PageProps) {
+  const resolvedParams = await params
+  const { token } = resolvedParams
+
+  // Obtener el contrato por token desde Supabase
+  const { data: contrato, error } = await supabaseServer
+    .from('contratos')
+    .select('*')
+    .eq('token_acceso', token)
+    .single()
+  
+  if (error || !contrato) {
+    notFound()
+  }
+
+  // Obtener datos del paciente
+  const { data: paciente } = await supabaseServer
+    .from('pacientes')
+    .select('*')
+    .eq('id', contrato.paciente_id)
+    .single()
+
+  let paciente2 = null;
+  if (contrato.modalidad_atencion === 'Pareja' && contrato.paciente_2_id) {
+    const { data: p2 } = await supabaseServer
+      .from('pacientes')
+      .select('*')
+      .eq('id', contrato.paciente_2_id)
+      .single()
+    paciente2 = p2;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+        
+        {/* Cabecera del Documento con Logo Institucional */}
+        <div className="p-8 md:p-10 text-center border-b border-gray-100 bg-white">
+          <img 
+            src="https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/logo-erika-.png" 
+            alt="Dra. Erika Rodríguez" 
+            className="h-24 mx-auto object-contain mb-6"
+          />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#224252]">
+            Contrato Terapéutico de Psicología
+          </h1>
+          <div className="mt-4 inline-flex items-center space-x-1 bg-[#57a6b2]/10 text-[#0e787a] px-3 py-1 rounded-full text-xs font-medium border border-[#57a6b2]/20">
+            <span className="w-2 h-2 rounded-full bg-[#0e787a]"></span>
+            <span>Documento Seguro y Encriptado</span>
+          </div>
+        </div>
+        
+        {/* Cuerpo del Documento */}
+        <div className="p-8 md:p-12 bg-white">
+          <div className="prose prose-sm md:prose-base text-gray-800 mb-12 max-w-none">
+            <div className="whitespace-pre-wrap leading-relaxed text-justify">
+              {contrato.contenido_texto}
+            </div>
+          </div>
+
+          {/* Sección de Firmas */}
+          <div className="pt-10 border-t border-gray-200">
+            <div className={`grid grid-cols-1 ${contrato.modalidad_atencion === 'Pareja' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-8 md:gap-4 lg:gap-12 items-end`}>
+              
+              {/* Columna Izquierda: La Psicóloga */}
+              <div className="flex flex-col items-center text-center">
+                <img 
+                  src="https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png" 
+                  alt="Firma Dra. Erika Rodríguez"
+                  className="h-32 object-contain mb-2 mix-blend-multiply"
+                />
+                <div className="border-t border-[#224252] w-64 pt-4">
+                  <p className="font-bold text-[#224252] text-sm">Erika Marcela Rodríguez López</p>
+                  <p className="text-sm text-gray-600 mt-1">Psicóloga • C.C. 1.121.933.244</p>
+                  <p className="text-sm text-gray-600">T.P. 244628</p>
+                </div>
+              </div>
+
+              {/* Columna Centro/Derecha: El/La Paciente 1 */}
+              <div className="flex flex-col items-center">
+                <div className="w-full max-w-sm mb-4">
+                  <CanvasFirmaWrapper token={token} firmante="paciente_1" />
+                </div>
+                
+                <div className="border-t border-[#224252] w-64 pt-4 text-center">
+                  <p className="font-bold text-[#224252] text-sm">{paciente?.nombre_completo || 'Nombre del Paciente'}</p>
+                  <p className="text-sm text-gray-600 mt-1">{paciente?.tipo_documento || 'ID'} {paciente?.numero_documento}</p>
+                </div>
+              </div>
+
+              {/* Columna Derecha: El/La Paciente 2 (Si aplica) */}
+              {contrato.modalidad_atencion === 'Pareja' && (
+                <div className="flex flex-col items-center">
+                  <div className="w-full max-w-sm mb-4">
+                    <CanvasFirmaWrapper token={token} firmante="paciente_2" />
+                  </div>
+                  
+                  <div className="border-t border-[#224252] w-64 pt-4 text-center">
+                    <p className="font-bold text-[#224252] text-sm">{paciente2?.nombre_completo || 'Nombre del Paciente'}</p>
+                    <p className="text-sm text-gray-600 mt-1">{paciente2?.tipo_documento || 'ID'} {paciente2?.numero_documento}</p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
