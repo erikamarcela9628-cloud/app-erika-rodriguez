@@ -2,6 +2,7 @@
 
 import { supabaseServer } from '@/lib/supabaseServer'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function guardarHistoriaClinica(formData: FormData) {
   const paciente_id = formData.get('paciente_id') as string
@@ -69,5 +70,6 @@ export async function guardarHistoriaClinica(formData: FormData) {
     throw new Error('No se pudo guardar la historia clínica: ' + error.message)
   }
 
+  revalidatePath('/admin/historias')
   redirect('/admin/historias/' + data.id + '/evolucion')
 }

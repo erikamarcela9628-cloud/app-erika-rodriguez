@@ -6,12 +6,14 @@ export const metadata = {
   title: 'Evoluciones Terapéuticas | Dra. Erika Rodríguez',
 }
 
-export default async function EvolucionPage({ params }: { params: { id: string } }) {
+export default async function EvolucionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   // Obtener historia y paciente
   const { data: historia, error } = await supabaseServer
     .from('historias_clinicas')
     .select('id, pacientes(nombre_completo, numero_documento)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !historia) {

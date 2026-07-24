@@ -6,7 +6,9 @@ export const metadata = {
   title: 'Ver Historia Clínica | Dra. Erika Rodríguez',
 }
 
-export default async function VerHistoriaPage({ params }: { params: { id: string } }) {
+export default async function VerHistoriaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   // Obtener la historia clínica completa con los datos del paciente y sus evoluciones
   const { data: historia, error } = await supabaseServer
     .from('historias_clinicas')
@@ -14,7 +16,7 @@ export default async function VerHistoriaPage({ params }: { params: { id: string
       *,
       pacientes (*)
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !historia) {

@@ -15,6 +15,16 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
   const nextTab = () => setActiveTab(prev => Math.min(prev + 1, 4))
   const prevTab = () => setActiveTab(prev => Math.max(prev - 1, 1))
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    // Evitar envío al presionar Enter, excepto en textareas
+    if (e.key === 'Enter') {
+      const target = e.target as HTMLElement
+      if (target.tagName !== 'TEXTAREA') {
+        e.preventDefault()
+      }
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Tabs Navigation */}
@@ -49,7 +59,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
         </button>
       </div>
 
-      <form action={formAction} className="p-8">
+      <form action={formAction} onKeyDown={handleKeyDown} className="p-8">
         
         {/* TAB 1: DATOS GENERALES */}
         <div className={activeTab === 1 ? 'block' : 'hidden'}>
