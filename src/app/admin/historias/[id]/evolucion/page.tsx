@@ -12,7 +12,7 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
   // Obtener historia y paciente
   const { data: historia, error } = await supabaseServer
     .from('historias_clinicas')
-    .select('id, pacientes(nombre_completo, numero_documento)')
+    .select('id, paciente_id, pacientes(nombre_completo, numero_documento)')
     .eq('id', id)
     .single()
 
@@ -27,7 +27,7 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
 
   // Obtener evoluciones
   const { data: evoluciones } = await supabaseServer
-    .from('evoluciones')
+    .from('evoluciones_clinicas')
     .select('*')
     .eq('historia_clinica_id', historia.id)
     .order('numero_sesion', { ascending: false })
@@ -39,7 +39,7 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Evoluciones Terapéuticas</h1>
-          <p className="mt-1 text-sm text-gray-500">Paciente: {(historia.pacientes as any).nombre_completo}</p>
+          <p className="mt-1 text-sm text-gray-500">Paciente: {(historia.pacientes as any)?.nombre_completo}</p>
         </div>
         <Link href={`/admin/historias/${historia.id}`} className="text-sm font-medium text-[#0e787a] hover:underline">
           &larr; Volver a la Historia
@@ -56,22 +56,23 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
             </div>
             <form action={guardarEvolucion} className="p-6">
               <input type="hidden" name="historia_clinica_id" value={historia.id} />
+              <input type="hidden" name="paciente_id" value={historia.paciente_id} />
               <input type="hidden" name="numero_sesion" value={numSiguienteSesion} />
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-800">Fecha de Sesión *</label>
-                  <input required type="datetime-local" name="fecha" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" />
+                  <input required type="datetime-local" name="fecha_sesion" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-800">Evolución Detallada *</label>
-                  <textarea required name="evolucion_detalle" rows={5} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Temas tratados, técnicas, respuestas del paciente..."></textarea>
+                  <textarea required name="evolucion_terapeutica" rows={5} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Temas tratados, técnicas, respuestas del paciente..."></textarea>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-800">Observaciones</label>
-                  <textarea name="observaciones" rows={3} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Anotaciones extra..."></textarea>
+                  <textarea name="observaciones_valoracion" rows={3} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Anotaciones extra..."></textarea>
                 </div>
 
                 <div>
@@ -97,17 +98,17 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
               <div key={evol.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="flex justify-between items-center mb-4 border-b pb-2">
                   <h3 className="font-bold text-[#224252]">Sesión N° {evol.numero_sesion}</h3>
-                  <span className="text-sm text-gray-500">{new Date(evol.fecha).toLocaleString('es-CO')}</span>
+                  <span className="text-sm text-gray-500">{new Date(evol.fecha_sesion).toLocaleString('es-CO')}</span>
                 </div>
                 <div className="space-y-3 text-sm">
                   <div>
                     <span className="font-semibold text-gray-700 block">Evolución:</span>
-                    <p className="whitespace-pre-wrap mt-1 text-gray-600">{evol.evolucion_detalle}</p>
+                    <p className="whitespace-pre-wrap mt-1 text-gray-600">{evol.evolucion_terapeutica}</p>
                   </div>
-                  {evol.observaciones && (
+                  {evol.observaciones_valoracion && (
                     <div>
                       <span className="font-semibold text-gray-700 block">Observaciones:</span>
-                      <p className="whitespace-pre-wrap mt-1 text-gray-600">{evol.observaciones}</p>
+                      <p className="whitespace-pre-wrap mt-1 text-gray-600">{evol.observaciones_valoracion}</p>
                     </div>
                   )}
                   {evol.diagnostico_cie10 && (

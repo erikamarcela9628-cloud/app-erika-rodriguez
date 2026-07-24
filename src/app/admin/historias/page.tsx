@@ -28,7 +28,7 @@ export default async function HistoriasPage() {
 
   // Count evoluciones per historia
   const { data: evoluciones } = await supabaseServer
-    .from('evoluciones')
+    .from('evoluciones_clinicas')
     .select('historia_clinica_id')
 
   const evolucionesCount = evoluciones?.reduce((acc: any, evol: any) => {

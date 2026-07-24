@@ -163,19 +163,19 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
               <tbody>
                 <tr style={{ backgroundColor: '#f9fafb' }}>
                   <td style={{ border: '1px solid #000', padding: '5px', fontWeight: 'bold' }}>
-                    Sesión N° {evol.numero_sesion} - Fecha: {new Date(evol.fecha).toLocaleDateString('es-CO')}
+                    Sesión N° {evol.numero_sesion} - Fecha: {new Date(evol.fecha_sesion).toLocaleDateString('es-CO')}
                   </td>
                 </tr>
                 <tr>
                   <td style={{ border: '1px solid #000', padding: '5px' }}>
                     <strong>Evolución:</strong><br/>
-                    {evol.evolucion_detalle}
+                    {evol.evolucion_terapeutica}
                   </td>
                 </tr>
                 <tr>
                   <td style={{ border: '1px solid #000', padding: '5px' }}>
                     <strong>Observaciones:</strong><br/>
-                    {evol.observaciones || 'N/A'}
+                    {evol.observaciones_valoracion || 'N/A'}
                   </td>
                 </tr>
               </tbody>

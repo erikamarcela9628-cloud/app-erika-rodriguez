@@ -29,10 +29,10 @@ export default async function VerHistoriaPage({ params }: { params: Promise<{ id
   }
 
   const { data: evoluciones } = await supabaseServer
-    .from('evoluciones')
+    .from('evoluciones_clinicas')
     .select('*')
     .eq('historia_clinica_id', historia.id)
-    .order('fecha', { ascending: true })
+    .order('fecha_sesion', { ascending: true })
 
   // Para evitar que pete por si algún JSON es null
   const acudiente = historia.acudiente || {}
