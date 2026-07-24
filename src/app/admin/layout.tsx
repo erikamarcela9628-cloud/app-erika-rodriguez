@@ -42,6 +42,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   Historias Clínicas
                 </Link>
+                <Link
+                  href="/admin/citas"
+                  className="border-transparent text-gray-600 hover:border-[#0e787a] hover:text-[#0e787a] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                >
+                  Agendamiento
+                </Link>
               </div>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
