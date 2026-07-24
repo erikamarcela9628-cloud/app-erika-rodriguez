@@ -1,0 +1,137 @@
+'use client'
+
+import React, { forwardRef } from 'react'
+
+interface PDFReciboProps {
+  pago: any
+  paciente: any
+  logoBase64: string
+}
+
+const PDFReciboTemplate = forwardRef<HTMLDivElement, PDFReciboProps>(
+  ({ pago, paciente, logoBase64 }, ref) => {
+    
+    // Formatting date to local
+    const fecha = new Date(pago.created_at).toLocaleDateString('es-CO', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    })
+
+    const montoFormateado = new Intl.NumberFormat('es-CO', { 
+      style: 'currency', 
+      currency: 'COP',
+      maximumFractionDigits: 0
+    }).format(pago.monto)
+
+    return (
+      <div 
+        ref={ref} 
+        style={{ width: '800px', backgroundColor: '#ffffff', color: '#000000', padding: '50px', fontFamily: 'Arial, sans-serif' }}
+      >
+        {/* Encabezado */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0e787a', paddingBottom: '20px', marginBottom: '30px' }}>
+          <div>
+            {logoBase64 && (
+              <img 
+                src={logoBase64} 
+                alt="Logo Dra. Erika" 
+                style={{ height: '70px', objectFit: 'contain' }} 
+                crossOrigin="anonymous"
+              />
+            )}
+          </div>
+          <div style={{ textAlign: 'right', color: '#224252' }}>
+            <h1 style={{ fontSize: '24px', margin: '0 0 5px 0' }}>RECIBO OFICIAL DE PAGO</h1>
+            <p style={{ margin: 0, fontWeight: 'bold', fontSize: '18px', color: '#0e787a' }}>{pago.numero_recibo}</p>
+          </div>
+        </div>
+
+        {/* Datos de la Dra. Erika */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+          <div style={{ fontSize: '13px', lineHeight: '1.5', color: '#4b5563' }}>
+            <strong style={{ color: '#224252', fontSize: '15px' }}>Erika Marcela Rodríguez López</strong><br/>
+            Psicóloga Clínica<br/>
+            C.C. 1.121.933.244 | T.P. 244628<br/>
+            Villavicencio, Colombia
+          </div>
+          <div style={{ fontSize: '13px', lineHeight: '1.5', color: '#4b5563', textAlign: 'right' }}>
+            <strong>Fecha de Emisión:</strong><br/>
+            {fecha}
+          </div>
+        </div>
+
+        {/* Datos del Paciente */}
+        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '40px' }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '15px', color: '#0e787a', borderBottom: '1px solid #cbd5e1', paddingBottom: '8px' }}>
+            Información del Paciente
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '14px' }}>
+            <div>
+              <strong style={{ color: '#475569' }}>Nombre:</strong><br/>
+              <span style={{ color: '#0f172a', fontWeight: '500' }}>{paciente?.nombre_completo}</span>
+            </div>
+            <div>
+              <strong style={{ color: '#475569' }}>Documento de Identidad:</strong><br/>
+              <span style={{ color: '#0f172a' }}>{paciente?.tipo_documento} {paciente?.numero_documento}</span>
+            </div>
+            {paciente?.telefono && (
+              <div>
+                <strong style={{ color: '#475569' }}>Teléfono:</strong><br/>
+                <span style={{ color: '#0f172a' }}>{paciente?.telefono}</span>
+              </div>
+            )}
+            {paciente?.email && (
+              <div>
+                <strong style={{ color: '#475569' }}>Email:</strong><br/>
+                <span style={{ color: '#0f172a' }}>{paciente?.email}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detalles del Pago */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#224252', color: 'white' }}>
+              <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px', borderTopLeftRadius: '6px' }}>Concepto</th>
+              <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Método de Pago</th>
+              <th style={{ padding: '12px', textAlign: 'left', fontSize: '14px' }}>Referencia</th>
+              <th style={{ padding: '12px', textAlign: 'right', fontSize: '14px', borderTopRightRadius: '6px' }}>Total Pagado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
+              <td style={{ padding: '16px 12px', fontSize: '15px', color: '#1e293b' }}>{pago.concepto}</td>
+              <td style={{ padding: '16px 12px', fontSize: '14px', color: '#475569' }}>{pago.metodo_pago}</td>
+              <td style={{ padding: '16px 12px', fontSize: '14px', color: '#475569' }}>{pago.referencia || 'N/A'}</td>
+              <td style={{ padding: '16px 12px', fontSize: '16px', fontWeight: 'bold', color: '#0f172a', textAlign: 'right' }}>
+                {montoFormateado}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Notas Opcionales */}
+        {pago.notas && (
+          <div style={{ marginBottom: '40px', fontSize: '13px', color: '#64748b' }}>
+            <strong>Notas: </strong>{pago.notas}
+          </div>
+        )}
+
+        {/* Pie de página */}
+        <div style={{ marginTop: '80px', paddingTop: '20px', borderTop: '1px solid #cbd5e1', textAlign: 'center', fontSize: '11px', color: '#64748b', lineHeight: '1.6' }}>
+          <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#0e787a' }}>COMPROBANTE OFICIAL DE PAGO DIGITAL</p>
+          <p style={{ margin: 0 }}>
+            Este documento constituye un recibo de caja equivalente y constancia de pago por los servicios profesionales descritos.<br/>
+            Erika Marcela Rodríguez López pertenece al Régimen Simplificado / No Responsable de IVA (Artículo 437 del ET).<br/>
+            Los servicios psicológicos clínicos están exentos de IVA según el Artículo 476 del Estatuto Tributario colombiano.
+          </p>
+        </div>
+      </div>
+    )
+  }
+)
+
+PDFReciboTemplate.displayName = 'PDFReciboTemplate'
+
+export default PDFReciboTemplate

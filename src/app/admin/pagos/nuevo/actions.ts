@@ -1,0 +1,42 @@
+'use server'
+
+import { supabaseServer } from '@/lib/supabaseServer'
+import { redirect } from 'next/navigation'
+import crypto from 'crypto'
+
+export async function registrarPago(formData: FormData) {
+  const paciente_id = formData.get('paciente_id') as string
+  const monto = parseFloat(formData.get('monto') as string)
+  const metodo_pago = formData.get('metodo_pago') as string
+  const referencia = formData.get('referencia') as string
+  const concepto = formData.get('concepto') as string
+  const notas = formData.get('notas') as string
+
+  // Generar ID de Recibo único: REC-YYYYMM-XXXX
+  const date = new Date()
+  const yearMonth = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}`
+  const randomSuffix = crypto.randomBytes(2).toString('hex').toUpperCase() // 4 caracteres hexadecimales
+  const numero_recibo = `REC-${yearMonth}-${randomSuffix}`
+
+  const { error } = await supabaseServer
+    .from('pagos')
+    .insert({
+      paciente_id,
+      monto,
+      metodo_pago,
+      referencia: referencia || null,
+      concepto,
+      notas: notas || null,
+      numero_recibo,
+    })
+
+  if (error) {
+    console.error('Error registrando pago:', error)
+    // Para simplificar, en caso de error podríamos redirigir a una página de error o lanzar una excepción,
+    // pero idealmente se usaría useFormState en la UI para mostrar el mensaje de error.
+    throw new Error(`No se pudo registrar el pago. ${error.message}`)
+  }
+
+  // Redirigir de vuelta al listado
+  redirect('/admin/pagos')
+}
