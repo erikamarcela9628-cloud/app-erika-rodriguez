@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // 1. Obtener contrato
     const { data: contrato, error: errC } = await supabaseServer
       .from('contratos')
-      .select('id, modalidad_atencion, estado')
+      .select('id, modalidad_atencion, estado, metadata')
       .eq('token_acceso', token)
       .single()
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const cantidadFirmas = firmas?.length || 0;
-    const requeridas = contrato.modalidad_atencion === 'Pareja' ? 2 : 1;
+    const requeridas = contrato.metadata?.firmas_requeridas || (contrato.modalidad_atencion === 'Pareja' ? 2 : 1);
 
     console.log(`[Webhook Interno] Contrato ${token}. Firmas: ${cantidadFirmas}/${requeridas}. Firmante actual: ${firmante}`);
 

@@ -23,7 +23,24 @@ export async function crearContrato(formData: FormData) {
     const valor_total_cop = parseFloat(formData.get('valor_total_cop') as string)
     const ciudad = formData.get('ciudad') as string
 
-    // 1. Buscar o Crear Paciente 1
+    // Datos Menor de Edad
+    const requiere_tutor_2 = formData.get('requiere_tutor_2') === 'on'
+    const requiere_asentimiento = formData.get('requiere_asentimiento') === 'on'
+    const tutor_1_nombre = formData.get('tutor_1_nombre') as string
+    const tutor_1_tipo_doc = formData.get('tutor_1_tipo_doc') as string
+    const tutor_1_num_doc = formData.get('tutor_1_num_doc') as string
+    const tutor_1_parentesco = formData.get('tutor_1_parentesco') as string
+    const tutor_1_email = formData.get('tutor_1_email') as string
+    const tutor_1_telefono = formData.get('tutor_1_telefono') as string
+    
+    const tutor_2_nombre = formData.get('tutor_2_nombre') as string
+    const tutor_2_tipo_doc = formData.get('tutor_2_tipo_doc') as string
+    const tutor_2_num_doc = formData.get('tutor_2_num_doc') as string
+    const tutor_2_parentesco = formData.get('tutor_2_parentesco') as string
+    const tutor_2_email = formData.get('tutor_2_email') as string
+    const tutor_2_telefono = formData.get('tutor_2_telefono') as string
+
+    // 1. Buscar o Crear Paciente 1 (o Menor)
     let paciente_id: string
 
     const { data: p1Existente, error: errorP1 } = await supabaseServer
@@ -97,15 +114,100 @@ export async function crearContrato(formData: FormData) {
     const fecha_actual = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
     const valorFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(valor_total_cop)
 
-    const introLegal = modalidad_atencion === 'Pareja'
-      ? `y los pacientes ${nombre_paciente}, identificado/a con ${tipo_documento} No. ${numero_documento}, y ${nombre_paciente_2}, identificado/a con ${tipo_documento_2} No. ${numero_documento_2}, en adelante 'Los Pacientes'`
-      : `y el/la paciente ${nombre_paciente}, identificado/a con ${tipo_documento} No. ${numero_documento}, en adelante 'El/La Paciente'`
+    let contenido_legal = '';
+    let introLegal = '';
+    
+    // Configurar Metadata para múltiples firmas
+    let metadata: any = null;
+    let tituloContrato = '';
 
-    const term = modalidad_atencion === 'Pareja' ? 'Los Pacientes' : 'El/La Paciente'
-    const termCompromete = modalidad_atencion === 'Pareja' ? 'Los Pacientes se comprometen' : 'El/La Paciente se compromete'
-    const termConjugacion = modalidad_atencion === 'Pareja' ? 'sinceros/as' : 'sincero/a'
+    if (modalidad_atencion === 'Menor de Edad') {
+      let firmas_requeridas = 1; // Tutor 1 mínimo
+      if (requiere_tutor_2) firmas_requeridas++;
+      if (requiere_asentimiento) firmas_requeridas++;
 
-    const contenido_legal = `Contrato Terapéutico de Psicología
+      metadata = {
+        es_menor: true,
+        firmas_requeridas,
+        requiere_tutor_2,
+        requiere_asentimiento,
+        tutor_1: {
+          nombre: tutor_1_nombre,
+          tipo_doc: tutor_1_tipo_doc,
+          num_doc: tutor_1_num_doc,
+          parentesco: tutor_1_parentesco
+        },
+        tutor_2: requiere_tutor_2 ? {
+          nombre: tutor_2_nombre,
+          tipo_doc: tutor_2_tipo_doc,
+          num_doc: tutor_2_num_doc,
+          parentesco: tutor_2_parentesco
+        } : null,
+        menor: {
+          nombre: nombre_paciente,
+          tipo_doc: tipo_documento,
+          num_doc: numero_documento
+        }
+      };
+
+      tituloContrato = `Consentimiento Informado Menor - ${nombre_paciente}`;
+      
+      const textoTutor2 = requiere_tutor_2 ? ` y ${tutor_2_nombre}, identificado/a con ${tutor_2_tipo_doc} No. ${tutor_2_num_doc}, en calidad de ${tutor_2_parentesco} del/la menor,` : '';
+      const repLegalesPlural = requiere_tutor_2 ? 'Los Representantes Legales' : 'El Representante Legal';
+      
+      introLegal = `y ${tutor_1_nombre}, identificado/a con ${tutor_1_tipo_doc} No. ${tutor_1_num_doc}, en calidad de ${tutor_1_parentesco} y representante legal del/la menor ${nombre_paciente}, identificado/a con ${tipo_documento} No. ${numero_documento},${textoTutor2} en adelante '${repLegalesPlural}'`;
+
+      contenido_legal = `Consentimiento Informado para Menores de Edad
+
+La profesional en psicología Erika Marcela Rodríguez López, identificada con cédula de ciudadanía No. 1.121.933.244 y tarjeta profesional No. 244628, en adelante 'La Psicóloga', ${introLegal}, celebran el presente contrato terapéutico de acuerdo a las siguientes cláusulas:
+
+Primera. Objeto del Contrato
+El objeto del presente contrato es establecer las condiciones bajo las cuales se llevará a cabo la intervención psicológica del/la menor en el consultorio de La Psicóloga, conforme a las leyes de la República de Colombia, al Código Deontológico y Bioético del Psicólogo (Ley 1090 de 2006) y al Código de la Infancia y la Adolescencia.
+
+Segunda. Autorización y Consentimiento
+${repLegalesPlural} de manera libre, voluntaria e informada, AUTORIZA(N) la atención psicoterapéutica del/la menor, comprendiendo los alcances, riesgos y beneficios del proceso.
+
+Tercera. Confidencialidad y Manejo de la Información
+La Psicóloga se compromete a mantener la confidencialidad de la información suministrada por el/la menor en las sesiones terapéuticas (Ley 1090 de 2006). ${repLegalesPlural} comprende(n) que el espacio terapéutico es privado. La Psicóloga compartirá con ${repLegalesPlural} únicamente información general sobre el progreso, riesgos detectados u orientaciones, sin vulnerar el secreto profesional, salvo en situaciones que involucren riesgo inminente para la vida o la integridad del/la menor o de terceras personas.
+
+Cuarta. Duración y Frecuencia de las Sesiones
+El proceso terapéutico tendrá una duración indefinida y su terminación dependerá del acuerdo mutuo. Las sesiones se realizarán con la frecuencia acordada y cada una tendrá una duración de aproximadamente 60 minutos.
+
+Quinta. Honorarios y Modalidades de Pago
+El costo correspondiente al servicio de ${tipo_servicio} (${cantidad_sesiones} sesión/es) será de ${valorFormateado}, que ${repLegalesPlural} se compromete(n) a pagar con anterioridad. Los pagos podrán realizarse en efectivo, transferencia bancaria o medios electrónicos. La reprogramación o cancelación requiere al menos 24 horas de antelación, de lo contrario, se cobrará el 50% del valor de la sesión.
+
+Sexta. Compromisos de las Partes
+La Psicóloga se compromete a proporcionar atención con altos estándares éticos. ${repLegalesPlural} se compromete(n) a garantizar la asistencia puntual del/la menor, colaborar con las pautas indicadas en casa, y mantener una comunicación respetuosa.
+
+Séptima. Terminación del Contrato
+Este contrato podrá darse por terminado en cualquier momento por mutuo acuerdo, o unilateralmente informando con al menos 48 horas de anticipación.
+
+Octava. Modificaciones al Contrato
+Cualquier modificación a los términos del presente contrato deberá ser acordada por ambas partes y formalizada por escrito.
+
+Novena. Legislación Aplicable
+Este contrato se rige por la Ley 1090 de 2006 y las normas vigentes de protección a la infancia y adolescencia en Colombia.
+
+En constancia de lo anterior, firman en señal de aceptación, en la ciudad de ${ciudad}, a los ${fecha_actual}.`;
+
+    } else {
+      // Individual o Pareja
+      metadata = {
+        es_menor: false,
+        firmas_requeridas: modalidad_atencion === 'Pareja' ? 2 : 1
+      };
+
+      tituloContrato = `Consentimiento Informado - ${nombre_paciente}${modalidad_atencion === 'Pareja' ? ` y ${nombre_paciente_2}` : ''}`;
+
+      introLegal = modalidad_atencion === 'Pareja'
+        ? `y los pacientes ${nombre_paciente}, identificado/a con ${tipo_documento} No. ${numero_documento}, y ${nombre_paciente_2}, identificado/a con ${tipo_documento_2} No. ${numero_documento_2}, en adelante 'Los Pacientes'`
+        : `y el/la paciente ${nombre_paciente}, identificado/a con ${tipo_documento} No. ${numero_documento}, en adelante 'El/La Paciente'`;
+
+      const term = modalidad_atencion === 'Pareja' ? 'Los Pacientes' : 'El/La Paciente';
+      const termCompromete = modalidad_atencion === 'Pareja' ? 'Los Pacientes se comprometen' : 'El/La Paciente se compromete';
+      const termConjugacion = modalidad_atencion === 'Pareja' ? 'sinceros/as' : 'sincero/a';
+
+      contenido_legal = `Contrato Terapéutico de Psicología
 
 La profesional en psicología Erika Marcela Rodríguez López, identificada con cédula de ciudadanía No. 1.121.933.244 y tarjeta profesional No. 244628, en adelante 'La Psicóloga', ${introLegal}, celebran el presente contrato terapéutico de acuerdo a las siguientes cláusulas:
 
@@ -144,7 +246,8 @@ Cualquier modificación a los términos del presente contrato deberá ser acorda
 Novena. Legislación Aplicable
 El presente contrato se rige por las leyes de la República de Colombia, en especial por lo dispuesto en la Ley 1090 de 2006.
 
-En constancia de lo anterior, firman en señal de aceptación, en la ciudad de ${ciudad}, a los ${fecha_actual}.`
+En constancia de lo anterior, firman en señal de aceptación, en la ciudad de ${ciudad}, a los ${fecha_actual}.`;
+    }
 
     // 3. Insertar Contrato
     const { error: errorContrato } = await supabaseServer
@@ -153,12 +256,13 @@ En constancia de lo anterior, firman en señal de aceptación, en la ciudad de $
         paciente_id,
         paciente_2_id,
         modalidad_atencion,
-        titulo: `Consentimiento Informado - ${nombre_paciente}${modalidad_atencion === 'Pareja' ? ` y ${nombre_paciente_2}` : ''}`,
+        titulo: tituloContrato,
         tipo_servicio,
         cantidad_sesiones,
         valor_total: valor_total_cop,
         ciudad,
         contenido_texto: contenido_legal,
+        metadata: metadata, // Nueva columna requerida en Supabase
         token_acceso,
         estado: 'pendiente'
       })

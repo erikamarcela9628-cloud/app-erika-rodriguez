@@ -74,9 +74,6 @@ export default function DashboardClient({ contratos, pacientes }: DashboardClien
       const paciente1 = pacientes.find(p => p.id === contrato.paciente_id)
       const paciente2 = contrato.paciente_2_id ? pacientes.find(p => p.id === contrato.paciente_2_id) : null
 
-      const firmaP1 = firmas?.find(f => f.firmado_por === 'paciente_1') || firmas?.[0]
-      const firmaP2 = firmas?.find(f => f.firmado_por === 'paciente_2')
-
       const getFirmaSrc = (f: any) => f ? (f.firma_base64 || f.imagen_firma || f.url_firma || f.archivo_firma_url) : '';
 
       const buildSignatureUrl = (firmaUrl: string) => {
@@ -87,28 +84,27 @@ export default function DashboardClient({ contratos, pacientes }: DashboardClien
         return data.publicUrl;
       }
 
-      const p1Url = firmaP1 ? buildSignatureUrl(getFirmaSrc(firmaP1)) : '';
-      const p2Url = firmaP2 ? buildSignatureUrl(getFirmaSrc(firmaP2)) : '';
-      
-      console.log("URL de firma P1:", p1Url);
-      console.log("URL de firma P2:", p2Url);
+      // Procesar TODAS las firmas dinámicamente
+      const firmasBase64: Record<string, string> = {};
+      const fetchFirmasPromises = (firmas || []).map(async (firmaObj) => {
+        const url = buildSignatureUrl(getFirmaSrc(firmaObj));
+        if (url) {
+           const b64 = await getBase64ImageFromUrl(url).catch(() => url);
+           firmasBase64[firmaObj.firmado_por] = b64;
+        }
+      });
 
-      const [logoB64, psicologaB64, fP1B64, fP2B64] = await Promise.all([
+      await Promise.all(fetchFirmasPromises);
+
+      const [logoB64, psicologaB64] = await Promise.all([
         getBase64ImageFromUrl('https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/logo-erika-.png').catch(()=>'https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/logo-erika-.png'),
-        getBase64ImageFromUrl('https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png').catch(()=>'https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png'),
-        p1Url ? getBase64ImageFromUrl(p1Url).catch(()=>p1Url) : Promise.resolve(''),
-        p2Url ? getBase64ImageFromUrl(p2Url).catch(()=>p2Url) : Promise.resolve('')
-      ])
-      
-      console.log('--- TEST B64 SIGNATURES ---');
-      console.log('P1:', fP1B64 ? fP1B64.substring(0, 30) + '...' : 'NONE');
-      console.log('P2:', fP2B64 ? fP2B64.substring(0, 30) + '...' : 'NONE');
+        getBase64ImageFromUrl('https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png').catch(()=>'https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png')
+      ]);
 
       const imagesBase64 = {
         logo: logoB64,
         firmaPsicologa: psicologaB64,
-        firmaPaciente1: fP1B64,
-        firmaPaciente2: fP2B64
+        ...firmasBase64
       }
 
       // 2. Set state to render template

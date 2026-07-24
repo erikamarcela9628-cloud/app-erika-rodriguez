@@ -41,6 +41,20 @@ export default async function FirmarContratoPage({ params }: PageProps) {
     paciente2 = p2;
   }
 
+  const isMenor = contrato.modalidad_atencion === 'Menor de Edad';
+  const meta = contrato.metadata || {};
+
+  let numColumnas = 2;
+  if (contrato.modalidad_atencion === 'Pareja') numColumnas = 3;
+  if (isMenor) {
+    if (meta.requiere_tutor_2) numColumnas++;
+    if (meta.requiere_asentimiento) numColumnas++;
+  }
+
+  const gridClasses = numColumnas === 2 ? 'md:grid-cols-2' 
+                    : numColumnas === 3 ? 'md:grid-cols-3' 
+                    : 'md:grid-cols-2 lg:grid-cols-4';
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
@@ -71,46 +85,97 @@ export default async function FirmarContratoPage({ params }: PageProps) {
 
           {/* Sección de Firmas */}
           <div className="pt-10 border-t border-gray-200">
-            <div className={`grid grid-cols-1 ${contrato.modalidad_atencion === 'Pareja' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-8 md:gap-4 lg:gap-12 items-end`}>
+            <div className={`grid grid-cols-1 ${gridClasses} gap-8 md:gap-4 lg:gap-8 items-end`}>
               
-              {/* Columna Izquierda: La Psicóloga */}
+              {/* Columna 1: La Psicóloga */}
               <div className="flex flex-col items-center text-center">
                 <img 
                   src="https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png" 
                   alt="Firma Dra. Erika Rodríguez"
                   className="h-32 object-contain mb-2 mix-blend-multiply"
                 />
-                <div className="border-t border-[#224252] w-64 pt-4">
-                  <p className="font-bold text-[#224252] text-sm">Erika Marcela Rodríguez López</p>
-                  <p className="text-sm text-gray-600 mt-1">Psicóloga • C.C. 1.121.933.244</p>
-                  <p className="text-sm text-gray-600">T.P. 244628</p>
+                <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 mx-auto">
+                  <p className="font-bold text-[#224252] text-sm leading-tight">Erika Marcela Rodríguez López</p>
+                  <p className="text-xs text-gray-600 mt-1">Psicóloga • C.C. 1.121.933.244</p>
+                  <p className="text-xs text-gray-600">T.P. 244628</p>
                 </div>
               </div>
 
-              {/* Columna Centro/Derecha: El/La Paciente 1 */}
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-sm mb-4">
-                  <CanvasFirmaWrapper token={token} firmante="paciente_1" />
-                </div>
-                
-                <div className="border-t border-[#224252] w-64 pt-4 text-center">
-                  <p className="font-bold text-[#224252] text-sm">{paciente?.nombre_completo || 'Nombre del Paciente'}</p>
-                  <p className="text-sm text-gray-600 mt-1">{paciente?.tipo_documento || 'ID'} {paciente?.numero_documento}</p>
-                </div>
-              </div>
+              {!isMenor && (
+                <>
+                  {/* El/La Paciente 1 */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-full max-w-xs mb-4">
+                      <CanvasFirmaWrapper token={token} firmante="paciente_1" />
+                    </div>
+                    
+                    <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
+                      <p className="font-bold text-[#224252] text-sm leading-tight">{paciente?.nombre_completo || 'Nombre del Paciente'}</p>
+                      <p className="text-xs text-gray-600 mt-1">{paciente?.tipo_documento || 'ID'} {paciente?.numero_documento}</p>
+                    </div>
+                  </div>
 
-              {/* Columna Derecha: El/La Paciente 2 (Si aplica) */}
-              {contrato.modalidad_atencion === 'Pareja' && (
-                <div className="flex flex-col items-center">
-                  <div className="w-full max-w-sm mb-4">
-                    <CanvasFirmaWrapper token={token} firmante="paciente_2" />
+                  {/* El/La Paciente 2 (Si aplica) */}
+                  {contrato.modalidad_atencion === 'Pareja' && (
+                    <div className="flex flex-col items-center">
+                      <div className="w-full max-w-xs mb-4">
+                        <CanvasFirmaWrapper token={token} firmante="paciente_2" />
+                      </div>
+                      
+                      <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
+                        <p className="font-bold text-[#224252] text-sm leading-tight">{paciente2?.nombre_completo || 'Nombre del Paciente'}</p>
+                        <p className="text-xs text-gray-600 mt-1">{paciente2?.tipo_documento || 'ID'} {paciente2?.numero_documento}</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isMenor && (
+                <>
+                  {/* Tutor 1 */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-full max-w-xs mb-4">
+                      <CanvasFirmaWrapper token={token} firmante="tutor_1" />
+                    </div>
+                    
+                    <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
+                      <p className="font-bold text-[#224252] text-sm leading-tight">{meta.tutor_1?.nombre}</p>
+                      <p className="text-xs text-gray-600 mt-1">{meta.tutor_1?.tipo_doc} {meta.tutor_1?.num_doc}</p>
+                      <p className="text-xs text-blue-700 mt-1 uppercase font-semibold">{meta.tutor_1?.parentesco}</p>
+                    </div>
                   </div>
-                  
-                  <div className="border-t border-[#224252] w-64 pt-4 text-center">
-                    <p className="font-bold text-[#224252] text-sm">{paciente2?.nombre_completo || 'Nombre del Paciente'}</p>
-                    <p className="text-sm text-gray-600 mt-1">{paciente2?.tipo_documento || 'ID'} {paciente2?.numero_documento}</p>
-                  </div>
-                </div>
+
+                  {/* Tutor 2 */}
+                  {meta.requiere_tutor_2 && (
+                    <div className="flex flex-col items-center">
+                      <div className="w-full max-w-xs mb-4">
+                        <CanvasFirmaWrapper token={token} firmante="tutor_2" />
+                      </div>
+                      
+                      <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
+                        <p className="font-bold text-[#224252] text-sm leading-tight">{meta.tutor_2?.nombre}</p>
+                        <p className="text-xs text-gray-600 mt-1">{meta.tutor_2?.tipo_doc} {meta.tutor_2?.num_doc}</p>
+                        <p className="text-xs text-blue-700 mt-1 uppercase font-semibold">{meta.tutor_2?.parentesco}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Menor (Asentimiento) */}
+                  {meta.requiere_asentimiento && (
+                    <div className="flex flex-col items-center">
+                      <div className="w-full max-w-xs mb-4">
+                        <CanvasFirmaWrapper token={token} firmante="menor_asentimiento" />
+                      </div>
+                      
+                      <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
+                        <p className="font-bold text-[#224252] text-sm leading-tight">{meta.menor?.nombre}</p>
+                        <p className="text-xs text-gray-600 mt-1">{meta.menor?.tipo_doc} {meta.menor?.num_doc}</p>
+                        <p className="text-xs text-blue-700 mt-1 uppercase font-semibold">ASENTIMIENTO DEL MENOR</p>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
             </div>

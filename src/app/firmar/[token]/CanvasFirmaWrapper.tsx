@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import CanvasFirma from '@/components/CanvasFirma'
 
-export default function CanvasFirmaWrapper({ token, firmante = 'paciente_1' }: { token: string, firmante?: 'paciente_1' | 'paciente_2' }) {
+export default function CanvasFirmaWrapper({ token, firmante = 'paciente_1' }: { token: string, firmante?: 'paciente_1' | 'paciente_2' | 'tutor_1' | 'tutor_2' | 'menor_asentimiento' }) {
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 

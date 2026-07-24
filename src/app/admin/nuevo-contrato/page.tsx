@@ -7,6 +7,8 @@ export default function NuevoContratoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [modalidad, setModalidad] = useState('Individual')
+  const [requiereTutor2, setRequiereTutor2] = useState(false)
+  const [requiereAsentimiento, setRequiereAsentimiento] = useState(false)
   
   const [successData, setSuccessData] = useState<{ token: string, link: string, telefono: string } | null>(null)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -139,7 +141,9 @@ export default function NuevoContratoPage() {
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 
                 <div className="sm:col-span-6">
-                  <label htmlFor="nombre_paciente" className="block text-sm font-medium text-gray-800">Nombre Completo</label>
+                  <label htmlFor="nombre_paciente" className="block text-sm font-medium text-gray-800">
+                    {modalidad === 'Menor de Edad' ? 'Nombre Completo del Menor' : (modalidad === 'Pareja' ? 'Nombre Completo (Paciente 1)' : 'Nombre Completo')}
+                  </label>
                   <div className="mt-1">
                     <input required type="text" name="nombre_paciente" id="nombre_paciente" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm" placeholder="Ej: Juan Pérez" />
                   </div>
@@ -153,6 +157,7 @@ export default function NuevoContratoPage() {
                       <option value="CE">Cédula de Extranjería</option>
                       <option value="Pasaporte">Pasaporte</option>
                       <option value="TI">Tarjeta de Identidad</option>
+                      {modalidad === 'Menor de Edad' && <option value="RC">Registro Civil</option>}
                     </select>
                   </div>
                 </div>
@@ -164,19 +169,23 @@ export default function NuevoContratoPage() {
                   </div>
                 </div>
 
-                <div className="sm:col-span-3">
-                  <label htmlFor="email_paciente" className="block text-sm font-medium text-gray-800">Correo Electrónico</label>
-                  <div className="mt-1">
-                    <input required type="email" name="email_paciente" id="email_paciente" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm" placeholder="ejemplo@correo.com" />
-                  </div>
-                </div>
+                {modalidad !== 'Menor de Edad' && (
+                  <>
+                    <div className="sm:col-span-3">
+                      <label htmlFor="email_paciente" className="block text-sm font-medium text-gray-800">Correo Electrónico</label>
+                      <div className="mt-1">
+                        <input required type="email" name="email_paciente" id="email_paciente" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm" placeholder="ejemplo@correo.com" />
+                      </div>
+                    </div>
 
-                <div className="sm:col-span-3">
-                  <label htmlFor="telefono_paciente" className="block text-sm font-medium text-gray-800">Teléfono / WhatsApp</label>
-                  <div className="mt-1">
-                    <input required type="tel" name="telefono_paciente" id="telefono_paciente" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm" placeholder="Ej: 3001234567" />
-                  </div>
-                </div>
+                    <div className="sm:col-span-3">
+                      <label htmlFor="telefono_paciente" className="block text-sm font-medium text-gray-800">Teléfono / WhatsApp</label>
+                      <div className="mt-1">
+                        <input required type="tel" name="telefono_paciente" id="telefono_paciente" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm" placeholder="Ej: 3001234567" />
+                      </div>
+                    </div>
+                  </>
+                )}
 
               </div>
             </div>
@@ -231,6 +240,121 @@ export default function NuevoContratoPage() {
             </div>
             )}
 
+            {/* Sección Tutores para Menor de Edad */}
+            {modalidad === 'Menor de Edad' && (
+              <div className="border-b border-gray-200 pb-6 pt-2 space-y-8">
+                {/* Tutor 1 */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Representante Legal (Tutor 1)</h3>
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div className="sm:col-span-4">
+                      <label className="block text-sm font-medium text-gray-800">Nombre Completo</label>
+                      <input required type="text" name="tutor_1_nombre" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Ej: Carlos Pérez" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-800">Parentesco</label>
+                      <select required name="tutor_1_parentesco" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="Padre">Padre</option>
+                        <option value="Madre">Madre</option>
+                        <option value="Representante Legal">Representante Legal</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-800">Tipo Documento</label>
+                      <select required name="tutor_1_tipo_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="CC">Cédula</option>
+                        <option value="CE">Extranjería</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-4">
+                      <label className="block text-sm font-medium text-gray-800">Número de Documento</label>
+                      <input required type="text" name="tutor_1_num_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-800">Email</label>
+                      <input required type="email" name="tutor_1_email" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-800">Teléfono (WhatsApp)</label>
+                      <input required type="tel" name="tutor_1_telefono" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checkboxes Extra */}
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      id="requiere_tutor_2"
+                      name="requiere_tutor_2"
+                      type="checkbox"
+                      checked={requiereTutor2}
+                      onChange={(e) => setRequiereTutor2(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                    />
+                    <label htmlFor="requiere_tutor_2" className="ml-3 text-sm font-medium text-gray-700">
+                      ¿Requiere firma de un segundo padre/tutor?
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="requiere_asentimiento"
+                      name="requiere_asentimiento"
+                      type="checkbox"
+                      checked={requiereAsentimiento}
+                      onChange={(e) => setRequiereAsentimiento(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                    />
+                    <label htmlFor="requiere_asentimiento" className="ml-3 text-sm font-medium text-gray-700">
+                      ¿Incluir bloque de firma para el Asentimiento Informado del menor?
+                    </label>
+                  </div>
+                </div>
+
+                {/* Tutor 2 (Opcional) */}
+                {requiereTutor2 && (
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h3 className="text-md font-medium text-gray-900 mb-4">Información del Tutor 2</h3>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-4">
+                        <label className="block text-sm font-medium text-gray-800">Nombre Completo</label>
+                        <input required type="text" name="tutor_2_nombre" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-800">Parentesco</label>
+                        <select required name="tutor_2_parentesco" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                          <option value="Madre">Madre</option>
+                          <option value="Padre">Padre</option>
+                          <option value="Representante Legal">Representante Legal</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-800">Tipo Documento</label>
+                        <select required name="tutor_2_tipo_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                          <option value="CC">Cédula</option>
+                          <option value="CE">Extranjería</option>
+                          <option value="Pasaporte">Pasaporte</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-4">
+                        <label className="block text-sm font-medium text-gray-800">Número de Documento</label>
+                        <input required type="text" name="tutor_2_num_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-800">Email</label>
+                        <input type="email" name="tutor_2_email" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-800">Teléfono (WhatsApp)</label>
+                        <input type="tel" name="tutor_2_telefono" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Sección Servicio */}
             <div className="pt-2">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Condiciones del Servicio</h3>
@@ -242,6 +366,7 @@ export default function NuevoContratoPage() {
                     <select required value={modalidad} onChange={(e) => setModalidad(e.target.value)} id="modalidad_atencion" name="modalidad_atencion" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-sm">
                       <option value="Individual">Individual</option>
                       <option value="Pareja">Pareja</option>
+                      <option value="Menor de Edad">Menor de Edad</option>
                     </select>
                   </div>
                 </div>

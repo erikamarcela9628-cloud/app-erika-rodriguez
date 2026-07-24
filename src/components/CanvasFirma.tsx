@@ -7,7 +7,7 @@ import CryptoJS from 'crypto-js'
 
 interface CanvasFirmaProps {
   tokenContrato: string;
-  firmante?: 'paciente_1' | 'paciente_2';
+  firmante?: 'paciente_1' | 'paciente_2' | 'tutor_1' | 'tutor_2' | 'menor_asentimiento';
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
