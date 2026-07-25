@@ -16,7 +16,9 @@ export default async function CitasPage() {
       pacientes (
         id,
         nombre_completo,
-        telefono
+        numero_documento,
+        telefono,
+        telefono_whatsapp
       )
     `)
     .order('fecha_hora', { ascending: true })
@@ -30,7 +32,7 @@ export default async function CitasPage() {
   const pacientesConHistoria = new Map(historias?.map(h => [h.paciente_id, h.id]) || [])
 
   if (citasError && citasError.code !== '42P01') {
-    console.error('Error fetching citas:', citasError)
+    console.error("Error detallado citas:", citasError.message, citasError.details, citasError.hint)
   }
 
   return (

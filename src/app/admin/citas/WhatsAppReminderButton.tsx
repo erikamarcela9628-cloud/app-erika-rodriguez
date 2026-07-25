@@ -9,7 +9,8 @@ interface WhatsAppReminderButtonProps {
 
 export default function WhatsAppReminderButton({ cita, className }: WhatsAppReminderButtonProps) {
   const paciente = cita.pacientes
-  const telefono = paciente?.telefono?.replace(/\D/g, '') || ''
+  const telefonoStr = paciente?.telefono_whatsapp || paciente?.telefono || ''
+  const telefono = telefonoStr.replace(/\D/g, '')
   
   // Si no tiene prefijo de país y tiene 10 dígitos (Colombia), agregamos 57
   const telefonoMundial = (telefono.length === 10 && !telefono.startsWith('57')) ? `57${telefono}` : telefono
