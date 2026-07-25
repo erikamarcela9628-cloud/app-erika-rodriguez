@@ -28,8 +28,8 @@ export default async function NuevaCitaPage() {
         <form action={agendarCita} className="p-8 space-y-6">
           
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">Paciente *</label>
-            <select required name="paciente_id" className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
+            <label className="block text-sm font-semibold text-slate-900 mb-1">Paciente *</label>
+            <select required name="paciente_id" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
               <option value="">Seleccione un paciente...</option>
               {pacientes?.map(p => (
                 <option key={p.id} value={p.id}>{p.nombre_completo} - {p.numero_documento}</option>
@@ -39,27 +39,27 @@ export default async function NuevaCitaPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">Fecha *</label>
-              <input required type="date" name="fecha" className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" />
+              <label className="block text-sm font-semibold text-slate-900 mb-1">Fecha *</label>
+              <input required type="date" name="fecha" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">Hora *</label>
-              <input required type="time" name="hora" className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" />
+              <label className="block text-sm font-semibold text-slate-900 mb-1">Hora *</label>
+              <input required type="time" name="hora" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">Duración</label>
-              <select name="duracion_minutos" className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
+              <label className="block text-sm font-semibold text-slate-900 mb-1">Duración</label>
+              <select name="duracion_minutos" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
                 <option value="45">45 minutos</option>
                 <option value="50">50 minutos</option>
                 <option value="60">1 hora</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">Modalidad</label>
-              <select name="modalidad" className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
+              <label className="block text-sm font-semibold text-slate-900 mb-1">Modalidad</label>
+              <select name="modalidad" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]">
                 <option value="Presencial">Presencial</option>
                 <option value="Virtual (Meet/Zoom)">Virtual (Meet/Zoom)</option>
               </select>
@@ -67,8 +67,8 @@ export default async function NuevaCitaPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">Notas / Observaciones</label>
-            <textarea name="observaciones" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" placeholder="Motivo o indicaciones previas..."></textarea>
+            <label className="block text-sm font-semibold text-slate-900 mb-1">Notas / Observaciones</label>
+            <textarea name="observaciones" rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 dark:text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a] focus:border-[#0e787a]" placeholder="Motivo o indicaciones previas..."></textarea>
           </div>
 
           <div className="pt-4 border-t border-gray-200">

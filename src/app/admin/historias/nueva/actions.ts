@@ -31,15 +31,15 @@ export async function guardarHistoriaClinica(formData: FormData) {
   }
 
   const datos_demograficos = {
-    fecha_nacimiento: formData.get('datos_demograficos.fecha_nacimiento'),
-    edad_atencion_anos: formData.get('datos_demograficos.edad_atencion_anos'),
-    edad_atencion_meses: formData.get('datos_demograficos.edad_atencion_meses'),
-    genero: formData.get('datos_demograficos.genero'),
-    estado_civil: formData.get('datos_demograficos.estado_civil'),
-    municipio_residencia: formData.get('datos_demograficos.municipio_residencia'),
+    fecha_nacimiento: formData.get('datos_demograficos.fecha_nacimiento') || null,
+    edad_atencion_anos: formData.get('datos_demograficos.edad_atencion_anos') || null,
+    edad_atencion_meses: formData.get('datos_demograficos.edad_atencion_meses') || null,
+    genero: formData.get('datos_demograficos.genero') || null,
+    estado_civil: formData.get('datos_demograficos.estado_civil') || null,
+    municipio_residencia: formData.get('datos_demograficos.municipio_residencia') || null,
     es_estudiante: formData.get('datos_demograficos.es_estudiante') === 'true',
     es_remitido_colegio: formData.get('datos_demograficos.es_remitido_colegio') === 'true',
-    institucion_remite: formData.get('datos_demograficos.institucion_remite')
+    institucion_remite: formData.get('datos_demograficos.institucion_remite') || null
   }
 
   const examen_mental = {
@@ -62,27 +62,32 @@ export async function guardarHistoriaClinica(formData: FormData) {
     plan: formData.get('analisis_diagnostico.plan')
   }
 
-  // Insertar en Supabase
-  const { data, error } = await supabaseServer
-    .from('historias_clinicas')
-    .insert({
-      paciente_id,
-      acudiente,
-      eps,
-      antecedentes,
-      anamnesis,
-      examen_mental,
-      analisis_diagnostico,
-      datos_demograficos
-    })
-    .select('id')
-    .single()
+  try {
+    // Insertar en Supabase
+    const { data, error } = await supabaseServer
+      .from('historias_clinicas')
+      .insert({
+        paciente_id,
+        acudiente,
+        eps,
+        antecedentes,
+        anamnesis,
+        examen_mental,
+        analisis_diagnostico,
+        datos_demograficos
+      })
+      .select('id')
+      .single()
 
-  if (error) {
-    console.error('Error guardando historia clínica:', error)
-    throw new Error('No se pudo guardar la historia clínica: ' + error.message)
+    if (error) {
+      console.error('Error guardando HC (Supabase):', error)
+      throw new Error('No se pudo guardar la historia clínica: ' + error.message)
+    }
+
+    revalidatePath('/admin/historias')
+    redirect('/admin/historias/' + data.id + '/evolucion')
+  } catch (error: any) {
+    console.error('Error guardando HC:', error)
+    throw error
   }
-
-  revalidatePath('/admin/historias')
-  redirect('/admin/historias/' + data.id + '/evolucion')
 }

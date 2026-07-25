@@ -15,7 +15,7 @@ export default function WhatsAppReminderButton({ cita, className }: WhatsAppRemi
   // Si no tiene prefijo de país y tiene 10 dígitos (Colombia), agregamos 57
   const telefonoMundial = (telefono.length === 10 && !telefono.startsWith('57')) ? `57${telefono}` : telefono
 
-  const dateObj = new Date(cita.fecha_hora)
+  const dateObj = new Date(cita.fecha_cita)
   
   // Formatear fecha en español
   const opcionesFecha: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }

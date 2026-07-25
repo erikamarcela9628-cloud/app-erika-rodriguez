@@ -19,7 +19,8 @@ export async function agendarCita(formData: FormData) {
     .from('citas')
     .insert({
       paciente_id,
-      fecha_hora,
+      fecha,
+      fecha_cita: fecha_hora,
       duracion_minutos,
       modalidad,
       estado: 'Programada',

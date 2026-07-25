@@ -20,7 +20,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
     const term = searchTerm.toLowerCase()
     const pName = cita.pacientes?.nombre_completo?.toLowerCase() || ''
     // Buscar también por fecha formateada (ej. 15/05/2026)
-    const dStr = new Date(cita.fecha_hora).toLocaleDateString()
+    const dStr = new Date(cita.fecha_cita).toLocaleDateString()
     return pName.includes(term) || dStr.includes(term)
   })
 
@@ -69,7 +69,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   // Componente de Tarjeta de Cita (Lista)
   const CitaCard = ({ cita }: { cita: any }) => {
     const isProgramada = cita.estado === 'Programada'
-    const dateObj = new Date(cita.fecha_hora)
+    const dateObj = new Date(cita.fecha_cita)
     
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
@@ -190,7 +190,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
               
               // Filtrar citas para este día
               const dayCitas = filteredCitas.filter(c => {
-                const cDate = new Date(c.fecha_hora)
+                const cDate = new Date(c.fecha_cita)
                 return cDate.getDate() === date.getDate() && 
                        cDate.getMonth() === date.getMonth() && 
                        cDate.getFullYear() === date.getFullYear()
@@ -210,7 +210,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                         title={`${cita.pacientes?.nombre_completo} - ${cita.estado}`}
                         className={`text-xs p-1 rounded border truncate cursor-pointer ${getColorClasses(cita.estado)}`}
                       >
-                        {new Date(cita.fecha_hora).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.pacientes?.nombre_completo?.split(' ')[0]}
+                        {new Date(cita.fecha_cita).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.pacientes?.nombre_completo?.split(' ')[0]}
                       </div>
                     ))}
                   </div>

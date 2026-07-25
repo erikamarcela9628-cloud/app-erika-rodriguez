@@ -13,15 +13,9 @@ export default async function CitasPage() {
     .from('citas')
     .select(`
       *,
-      pacientes (
-        id,
-        nombre_completo,
-        numero_documento,
-        telefono,
-        telefono_whatsapp
-      )
+      pacientes (*)
     `)
-    .order('fecha_hora', { ascending: true })
+    .order('fecha_cita', { ascending: true })
 
   // También obtener el listado de pacientes para el modal de historias, o verificar si tienen historias
   const { data: historias } = await supabaseServer
