@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { guardarEvolucion } from './actions'
 
 export const metadata = {
-  title: 'Evoluciones Terapéuticas | Dra. Erika Rodríguez',
+  title: 'Evoluciones Terapéuticas | Psicóloga Erika Rodríguez',
 }
 
 export default async function EvolucionPage({ params }: { params: Promise<{ id: string }> }) {

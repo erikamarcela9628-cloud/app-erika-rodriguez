@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import AITextArea from './AITextArea'
 
 interface HistoriaFormProps {
   pacientes: any[]
-  formAction: (formData: FormData) => void
+  formAction: (formData: FormData) => Promise<{ success: boolean; id?: string; error?: string }> | any
   initialData?: any // Para edición futura
 }
 
 export default function HistoriaForm({ pacientes, formAction, initialData }: HistoriaFormProps) {
   const [activeTab, setActiveTab] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Nuevos estados para demografía
   const [fechaNacimiento, setFechaNacimiento] = useState(initialData?.datos_demograficos?.fecha_nacimiento || '')
@@ -61,6 +63,31 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
     }
   }
 
+  const handleSubmit = async (formData: FormData) => {
+    const paciente_id = formData.get('paciente_id')
+    const fecha = formData.get('datos_demograficos.fecha_nacimiento')
+    
+    if (!paciente_id || !fecha) {
+      alert("Por favor, complete los campos obligatorios: Paciente y Fecha de Nacimiento (Pestaña 1).")
+      setActiveTab(1)
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      const res = await formAction(formData)
+      if (res && res.success) {
+        window.location.href = `/admin/historias/${res.id}/evolucion`
+      } else if (res && !res.success) {
+        alert(res.error || "Error desconocido guardando la historia clínica.")
+      }
+    } catch (err: any) {
+      alert("Error en la petición: " + err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Tabs Navigation */}
@@ -95,7 +122,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
         </button>
       </div>
 
-      <form action={formAction} onKeyDown={handleKeyDown} className="p-8">
+      <form action={handleSubmit} onKeyDown={handleKeyDown} className="p-8">
         {/* Hidden inputs if editing */}
         {initialData && <input type="hidden" name="id" value={initialData.id} />}
         
@@ -105,7 +132,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-8">
             <div className="sm:col-span-6">
               <label htmlFor="paciente_id" className="block text-sm font-semibold text-slate-800">Seleccionar Paciente *</label>
-              <select required id="paciente_id" name="paciente_id" defaultValue={initialData?.paciente_id} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select id="paciente_id" name="paciente_id" defaultValue={initialData?.paciente_id} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Buscar paciente...</option>
                 {pacientes.map(p => (
                   <option key={p.id} value={p.id}>{p.nombre_completo} - {p.numero_documento}</option>
@@ -115,22 +142,22 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Fecha de Nacimiento *</label>
-              <input required type="date" name="datos_demograficos.fecha_nacimiento" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="date" name="datos_demograficos.fecha_nacimiento" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Edad Calculada (Años) *</label>
-              <input required type="number" readOnly name="datos_demograficos.edad_atencion_anos" value={edadAnos} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="number" readOnly name="datos_demograficos.edad_atencion_anos" value={edadAnos} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Edad Calculada (Meses) *</label>
-              <input required type="number" readOnly name="datos_demograficos.edad_atencion_meses" value={edadMeses} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="number" readOnly name="datos_demograficos.edad_atencion_meses" value={edadMeses} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-slate-50 text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Género / Sexo *</label>
-              <select required name="datos_demograficos.genero" defaultValue={initialData?.datos_demograficos?.genero} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="datos_demograficos.genero" defaultValue={initialData?.datos_demograficos?.genero} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Seleccionar...</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
@@ -140,7 +167,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Estado Civil *</label>
-              <select required name="datos_demograficos.estado_civil" defaultValue={initialData?.datos_demograficos?.estado_civil} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="datos_demograficos.estado_civil" defaultValue={initialData?.datos_demograficos?.estado_civil} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Seleccionar...</option>
                 <option value="Soltero/a">Soltero/a</option>
                 <option value="Casado/a">Casado/a</option>
@@ -153,7 +180,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Municipio de Residencia *</label>
-              <input required type="text" name="datos_demograficos.municipio_residencia" defaultValue={initialData?.datos_demograficos?.municipio_residencia || "Villavicencio"} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="datos_demograficos.municipio_residencia" defaultValue={initialData?.datos_demograficos?.municipio_residencia || "Villavicencio"} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
           </div>
 
@@ -195,7 +222,6 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
                       Nombre de la Institución / Colegio que remite *
                     </label>
                     <input
-                      required
                       type="text"
                       id="institucion_remite"
                       name="datos_demograficos.institucion_remite"
@@ -266,18 +292,29 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
           <h2 className="text-lg font-bold text-slate-900 mb-6 border-t pt-6">Anamnesis</h2>
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1 mb-8">
-            <div>
-              <label className="block text-sm font-semibold text-slate-800 mb-2">Motivo de Consulta (Referido por el paciente)</label>
-              <textarea required name="anamnesis.motivo_consulta" defaultValue={initialData?.anamnesis?.motivo_consulta} rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder='"Vengo porque..."'></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-800 mb-2">Definición del Problema (Perspectiva profesional)</label>
-              <textarea required name="anamnesis.definicion_problema" defaultValue={initialData?.anamnesis?.definicion_problema} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Análisis clínico del problema actual..."></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-800 mb-2">Vínculos Afectivos, Comunicación y Contexto</label>
-              <textarea name="anamnesis.vinculos" defaultValue={initialData?.anamnesis?.vinculos} rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
-            </div>
+            <AITextArea
+              name="anamnesis.motivo_consulta"
+              label="Motivo de Consulta (Referido por el paciente)"
+              defaultValue={initialData?.anamnesis?.motivo_consulta}
+              rows={3}
+              placeholder='"Vengo porque..."'
+              seccion="Motivo de consulta. Se espera una descripción inicial del problema desde la perspectiva del paciente."
+            />
+            <AITextArea
+              name="anamnesis.definicion_problema"
+              label="Definición del Problema (Perspectiva profesional)"
+              defaultValue={initialData?.anamnesis?.definicion_problema}
+              rows={4}
+              placeholder="Análisis clínico del problema actual..."
+              seccion="Definición del problema. Se espera una descripción técnica y profesional de la sintomatología y situación clínica."
+            />
+            <AITextArea
+              name="anamnesis.vinculos"
+              label="Vínculos Afectivos, Comunicación y Contexto"
+              defaultValue={initialData?.anamnesis?.vinculos}
+              rows={3}
+              seccion="Vínculos afectivos y contexto social/familiar. Se espera una descripción de las relaciones interpersonales y dinámicas sociales del paciente."
+            />
           </div>
         </div>
 
@@ -351,7 +388,6 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             <div className="sm:col-span-2 bg-slate-50 p-6 rounded-lg border border-slate-200 mt-4">
               <label className="block text-sm font-semibold text-slate-800 mb-2">Evaluación de Riesgo Suicida *</label>
               <select 
-                required
                 name="examen_mental.nivel_riesgo_suicida" 
                 value={riesgoSuicida}
                 onChange={(e) => setRiesgoSuicida(e.target.value)}
@@ -387,8 +423,13 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <h2 className="text-lg font-bold text-slate-900 mb-6">Impresión Diagnóstica y Plan</h2>
           
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-800 mb-2">Análisis Objetivo (Observaciones del profesional)</label>
-            <textarea name="analisis_diagnostico.analisis" defaultValue={initialData?.analisis_diagnostico?.analisis} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
+            <AITextArea
+              name="analisis_diagnostico.analisis"
+              label="Análisis Objetivo (Observaciones del profesional)"
+              defaultValue={initialData?.analisis_diagnostico?.analisis}
+              rows={4}
+              seccion="Análisis objetivo y observaciones clínicas generales previas al diagnóstico."
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 mb-6">
@@ -408,8 +449,13 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-800 mb-2">Plan de Intervención / Recomendaciones</label>
-            <textarea name="analisis_diagnostico.plan" defaultValue={initialData?.analisis_diagnostico?.plan} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
+            <AITextArea
+              name="analisis_diagnostico.plan"
+              label="Plan de Intervención / Recomendaciones"
+              defaultValue={initialData?.analisis_diagnostico?.plan}
+              rows={4}
+              seccion="Plan de intervención terapéutica y recomendaciones para el paciente."
+            />
           </div>
         </div>
 
@@ -435,9 +481,10 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           ) : (
             <button
               type="submit"
-              className="bg-[#0e787a] py-2 px-8 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-[#0b5c5d]"
+              disabled={isSubmitting}
+              className="bg-[#0e787a] py-2 px-8 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-[#0b5c5d] disabled:opacity-50"
             >
-              {initialData ? 'Actualizar Historia Clínica' : 'Guardar Historia Clínica'}
+              {isSubmitting ? 'Guardando...' : initialData ? 'Actualizar Historia Clínica' : 'Guardar Historia Clínica'}
             </button>
           )}
         </div>

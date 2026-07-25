@@ -4,7 +4,7 @@ import { guardarHistoriaClinica } from './actions'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Nueva Historia Clínica | Dra. Erika Rodríguez',
+  title: 'Nueva Historia Clínica | Psicóloga Erika Rodríguez',
 }
 
 export default async function NuevaHistoriaPage() {

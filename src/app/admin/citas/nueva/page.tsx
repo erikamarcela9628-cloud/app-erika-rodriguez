@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { agendarCita } from '../actions'
 
 export const metadata = {
-  title: 'Agendar Cita | Dra. Erika Rodríguez',
+  title: 'Agendar Cita | Psicóloga Erika Rodríguez',
 }
 
 export default async function NuevaCitaPage() {

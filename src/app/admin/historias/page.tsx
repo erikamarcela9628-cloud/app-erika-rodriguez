@@ -3,7 +3,7 @@ import HistoriasClient from './HistoriasClient'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Historias Clínicas | Dra. Erika Rodríguez',
+  title: 'Historias Clínicas | Psicóloga Erika Rodríguez',
 }
 
 export default async function HistoriasPage() {

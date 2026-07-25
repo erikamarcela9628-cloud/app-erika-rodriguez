@@ -57,35 +57,35 @@ const PDFContratoTemplate = forwardRef<HTMLDivElement, PDFProps>(
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '50px', flexWrap: 'wrap', gap: '20px', pageBreakInside: 'avoid' }}>
           
           {/* Psicóloga */}
-          <div style={{ width: '30%', textAlign: 'center' }}>
+          <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {imagesBase64.firmaPsicologa && (
               <img 
                 src={imagesBase64.firmaPsicologa} 
                 alt="Firma Psicóloga" 
-                style={{ height: '80px', objectFit: 'contain' }}
+                style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                 crossOrigin="anonymous"
               />
             )}
-            <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+            <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
               <strong>Erika Marcela Rodríguez López</strong>
               <br/>Psicóloga • C.C. 1.121.933.244
-              <br/>T.P. 244628
+              <br/>T.P. No. 244628
             </div>
           </div>
 
           {!isMenor && (
             <>
               {/* Paciente 1 */}
-              <div style={{ width: '30%', textAlign: 'center' }}>
+              <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {imagesBase64.paciente_1 && (
                   <img 
                     src={imagesBase64.paciente_1}
                     alt="Firma Paciente 1" 
-                    style={{ height: '80px', objectFit: 'contain' }}
+                    style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                     crossOrigin="anonymous"
                   />
                 )}
-                <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+                <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
                   <strong>{paciente1?.nombre_completo}</strong>
                   <br/>{paciente1?.tipo_documento} {paciente1?.numero_documento}
                 </div>
@@ -93,16 +93,16 @@ const PDFContratoTemplate = forwardRef<HTMLDivElement, PDFProps>(
 
               {/* Paciente 2 (Si aplica) */}
               {contrato.modalidad_atencion === 'Pareja' && paciente2 && (
-                <div style={{ width: '30%', textAlign: 'center' }}>
+                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {imagesBase64.paciente_2 && (
                     <img 
                       src={imagesBase64.paciente_2}
                       alt="Firma Paciente 2" 
-                      style={{ height: '80px', objectFit: 'contain' }}
+                      style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                       crossOrigin="anonymous"
                     />
                   )}
-                  <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+                  <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
                     <strong>{paciente2?.nombre_completo}</strong>
                     <br/>{paciente2?.tipo_documento} {paciente2?.numero_documento}
                   </div>
@@ -114,16 +114,16 @@ const PDFContratoTemplate = forwardRef<HTMLDivElement, PDFProps>(
           {isMenor && (
             <>
               {/* Tutor 1 */}
-              <div style={{ width: '30%', textAlign: 'center' }}>
+              <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {imagesBase64.tutor_1 && (
                   <img 
                     src={imagesBase64.tutor_1}
                     alt="Firma Tutor 1" 
-                    style={{ height: '80px', objectFit: 'contain' }}
+                    style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                     crossOrigin="anonymous"
                   />
                 )}
-                <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+                <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
                   <strong>{meta.tutor_1?.nombre}</strong>
                   <br/>{meta.tutor_1?.tipo_doc} {meta.tutor_1?.num_doc}
                   <br/><span style={{ fontSize: '10px', textTransform: 'uppercase' }}>{meta.tutor_1?.parentesco}</span>
@@ -132,16 +132,16 @@ const PDFContratoTemplate = forwardRef<HTMLDivElement, PDFProps>(
 
               {/* Tutor 2 */}
               {meta.requiere_tutor_2 && (
-                <div style={{ width: '30%', textAlign: 'center' }}>
+                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {imagesBase64.tutor_2 && (
                     <img 
                       src={imagesBase64.tutor_2}
                       alt="Firma Tutor 2" 
-                      style={{ height: '80px', objectFit: 'contain' }}
+                      style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                       crossOrigin="anonymous"
                     />
                   )}
-                  <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+                  <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
                     <strong>{meta.tutor_2?.nombre}</strong>
                     <br/>{meta.tutor_2?.tipo_doc} {meta.tutor_2?.num_doc}
                     <br/><span style={{ fontSize: '10px', textTransform: 'uppercase' }}>{meta.tutor_2?.parentesco}</span>
@@ -151,16 +151,16 @@ const PDFContratoTemplate = forwardRef<HTMLDivElement, PDFProps>(
 
               {/* Asentimiento */}
               {meta.requiere_asentimiento && (
-                <div style={{ width: '30%', textAlign: 'center' }}>
+                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {imagesBase64.menor_asentimiento && (
                     <img 
                       src={imagesBase64.menor_asentimiento}
                       alt="Asentimiento Menor" 
-                      style={{ height: '80px', objectFit: 'contain' }}
+                      style={{ maxWidth: '180px', height: 'auto', maxHeight: '80px', objectFit: 'contain', marginBottom: '-15px', position: 'relative', zIndex: 1 }}
                       crossOrigin="anonymous"
                     />
                   )}
-                  <div style={{ borderTop: '1px solid #224252', paddingTop: '10px' }}>
+                  <div style={{ borderTop: '1px solid #224252', width: '100%', textAlign: 'center', paddingTop: '10px', zIndex: 0, position: 'relative' }}>
                     <strong>{meta.menor?.nombre}</strong>
                     <br/>{meta.menor?.tipo_doc} {meta.menor?.num_doc}
                     <br/><span style={{ fontSize: '10px', textTransform: 'uppercase' }}>ASENTIMIENTO DEL MENOR</span>

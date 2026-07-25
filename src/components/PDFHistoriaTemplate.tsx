@@ -44,8 +44,8 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
             </tr>
             <tr>
               <td style={{ border: '1px solid #000', padding: '5px', textAlign: 'center', fontSize: '12px' }}>
-                <strong>Dra. ERIKA MARCELA RODRÍGUEZ LÓPEZ</strong><br/>
-                Psicóloga Clínica | C.C. 1.121.933.244 | T.P. 244628
+                <strong>Psicóloga ERIKA MARCELA RODRÍGUEZ LÓPEZ</strong><br/>
+                Psicóloga | C.C. 1.121.933.244 | T.P. No. 244628
               </td>
               <td style={{ border: '1px solid #000', padding: '5px', fontSize: '11px' }}>
                 <strong>FECHA:</strong> {new Date(historia.created_at).toLocaleDateString('es-CO')}
@@ -206,14 +206,26 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
         )}
 
         {/* Firma del Profesional */}
-        <div style={{ marginTop: '50px', textAlign: 'center' }}>
+        <div style={{ marginTop: '50px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {firmaBase64 && (
-            <img src={firmaBase64} alt="Firma Profesional" style={{ height: '80px', objectFit: 'contain' }} />
+            <img 
+              src={firmaBase64} 
+              alt="Firma Profesional" 
+              style={{ 
+                maxWidth: '180px', 
+                height: 'auto', 
+                maxHeight: '80px',
+                objectFit: 'contain',
+                marginBottom: '-15px',
+                position: 'relative',
+                zIndex: 1
+              }} 
+            />
           )}
-          <div style={{ borderTop: '1px solid #000', width: '250px', margin: '0 auto', paddingTop: '5px', fontSize: '12px' }}>
+          <div style={{ borderTop: '1px solid #000', width: '250px', textAlign: 'center', paddingTop: '5px', fontSize: '12px', zIndex: 0, position: 'relative' }}>
             <strong>Erika Marcela Rodríguez López</strong><br/>
-            Psicóloga Clínica<br/>
-            C.C. 1.121.933.244 - T.P. 244628
+            Psicóloga<br/>
+            C.C. 1.121.933.244 - T.P. No. 244628
           </div>
         </div>
 

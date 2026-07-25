@@ -14,13 +14,14 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   const [view, setView] = useState<'lista' | 'calendario'>('lista')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedCita, setSelectedCita] = useState<any>(null)
 
   // Filtrado general
   const filteredCitas = citas.filter(cita => {
     const term = searchTerm.toLowerCase()
     const pName = cita.pacientes?.nombre_completo?.toLowerCase() || ''
     // Buscar también por fecha formateada (ej. 15/05/2026)
-    const dStr = new Date(cita.fecha_cita).toLocaleDateString()
+    const dStr = new Date(cita.fecha_inicio).toLocaleDateString()
     return pName.includes(term) || dStr.includes(term)
   })
 
@@ -69,7 +70,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   // Componente de Tarjeta de Cita (Lista)
   const CitaCard = ({ cita }: { cita: any }) => {
     const isProgramada = cita.estado === 'Programada'
-    const dateObj = new Date(cita.fecha_cita)
+    const dateObj = new Date(cita.fecha_inicio)
     
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
@@ -190,7 +191,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
               
               // Filtrar citas para este día
               const dayCitas = filteredCitas.filter(c => {
-                const cDate = new Date(c.fecha_cita)
+                const cDate = new Date(c.fecha_inicio)
                 return cDate.getDate() === date.getDate() && 
                        cDate.getMonth() === date.getMonth() && 
                        cDate.getFullYear() === date.getFullYear()
@@ -208,15 +209,84 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                       <div 
                         key={cita.id} 
                         title={`${cita.pacientes?.nombre_completo} - ${cita.estado}`}
+                        onClick={() => setSelectedCita(cita)}
                         className={`text-xs p-1 rounded border truncate cursor-pointer ${getColorClasses(cita.estado)}`}
                       >
-                        {new Date(cita.fecha_cita).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.pacientes?.nombre_completo?.split(' ')[0]}
+                        {new Date(cita.fecha_inicio).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.pacientes?.nombre_completo?.split(' ')[0]}
                       </div>
                     ))}
                   </div>
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Detalles Cita */}
+      {selectedCita && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-slate-900">Detalles de la Cita</h3>
+              <button 
+                onClick={() => setSelectedCita(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Paciente</p>
+                <p className="text-lg font-bold text-slate-900">{selectedCita.pacientes?.nombre_completo || 'Desconocido'}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Fecha</p>
+                  <p className="text-sm font-medium text-slate-900">{new Date(selectedCita.fecha_inicio).toLocaleDateString('es-CO')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Horario</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {new Date(selectedCita.fecha_inicio).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})}
+                    {selectedCita.fecha_fin && ` - ${new Date(selectedCita.fecha_fin).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})}`}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Modalidad</p>
+                  <p className="text-sm font-medium text-slate-900">{selectedCita.modalidad}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Estado</p>
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusBadge(selectedCita.estado)}`}>
+                    {selectedCita.estado}
+                  </span>
+                </div>
+              </div>
+
+              {selectedCita.observaciones && (
+                <div>
+                  <p className="text-sm text-gray-500 font-medium mb-1">Observaciones</p>
+                  <p className="text-sm text-slate-900 bg-gray-50 p-3 rounded-lg border border-gray-100">{selectedCita.observaciones}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
+              <Link 
+                href={`/admin/historias/nueva?paciente_id=${selectedCita.paciente_id}`}
+                className="w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] transition-colors"
+              >
+                Atender / Nueva Historia
+              </Link>
+              
+              {selectedCita.estado === 'Programada' && (
+                <WhatsAppReminderButton cita={selectedCita} className="w-full flex justify-center" />
+              )}
+            </div>
           </div>
         </div>
       )}

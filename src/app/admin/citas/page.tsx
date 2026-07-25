@@ -3,7 +3,7 @@ import Link from 'next/link'
 import CitasClient from './CitasClient'
 
 export const metadata = {
-  title: 'Agendamiento de Citas | Dra. Erika Rodríguez',
+  title: 'Agendamiento de Citas | Psicóloga Erika Rodríguez',
 }
 
 export default async function CitasPage() {
@@ -15,7 +15,7 @@ export default async function CitasPage() {
       *,
       pacientes (*)
     `)
-    .order('fecha_cita', { ascending: true })
+    .order('fecha_inicio', { ascending: true })
 
   // También obtener el listado de pacientes para el modal de historias, o verificar si tienen historias
   const { data: historias } = await supabaseServer

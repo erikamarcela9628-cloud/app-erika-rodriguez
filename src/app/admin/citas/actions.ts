@@ -13,18 +13,21 @@ export async function agendarCita(formData: FormData) {
   const observaciones = formData.get('observaciones') as string
 
   // Combinar fecha y hora
-  const fecha_hora = new Date(`${fecha}T${hora}:00`).toISOString()
+  const fechaInicio = new Date(`${fecha}T${hora}:00`)
+  const fechaFin = new Date(fechaInicio.getTime() + duracion_minutos * 60000)
 
   const { data, error } = await supabaseServer
     .from('citas')
     .insert({
       paciente_id,
       fecha,
-      fecha_cita: fecha_hora,
+      hora,
+      fecha_inicio: fechaInicio.toISOString(),
+      fecha_fin: fechaFin.toISOString(),
       duracion_minutos,
       modalidad,
       estado: 'Programada',
-      observaciones: observaciones || null
+      observaciones: observaciones || ''
     })
     .select('id')
     .single()

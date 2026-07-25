@@ -15,7 +15,7 @@ export default function WhatsAppReminderButton({ cita, className }: WhatsAppRemi
   // Si no tiene prefijo de país y tiene 10 dígitos (Colombia), agregamos 57
   const telefonoMundial = (telefono.length === 10 && !telefono.startsWith('57')) ? `57${telefono}` : telefono
 
-  const dateObj = new Date(cita.fecha_cita)
+  const dateObj = new Date(cita.fecha_inicio)
   
   // Formatear fecha en español
   const opcionesFecha: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
@@ -25,7 +25,7 @@ export default function WhatsAppReminderButton({ cita, className }: WhatsAppRemi
   const opcionesHora: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: true }
   const horaStr = dateObj.toLocaleTimeString('es-CO', opcionesHora)
 
-  const mensaje = `Hola *${paciente?.nombre_completo || ''}*, te recordamos tu cita de Atención Psicológica con la Dra. Erika Rodríguez para el día *${fechaStr}* a las *${horaStr}*.\n📍 Modalidad: ${cita.modalidad}\nPor favor confirma tu asistencia respondiendo a este mensaje. ¡Feliz día!`
+  const mensaje = `Hola *${paciente?.nombre_completo || ''}*, te recordamos tu cita de Atención Psicológica con la Psicóloga Erika Rodríguez para el día *${fechaStr}* a las *${horaStr}*.\n📍 Modalidad: ${cita.modalidad}\nPor favor confirma tu asistencia respondiendo a este mensaje. ¡Feliz día!`
 
   const url = `https://wa.me/${telefonoMundial}?text=${encodeURIComponent(mensaje)}`
 

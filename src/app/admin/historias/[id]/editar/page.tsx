@@ -4,7 +4,7 @@ import HistoriaForm from '../../HistoriaForm'
 import { actualizarHistoriaClinica } from '../../nueva/actions'
 
 export const metadata = {
-  title: 'Editar Historia Clínica | Dra. Erika Rodríguez',
+  title: 'Editar Historia Clínica | Psicóloga Erika Rodríguez',
 }
 
 export default async function EditarHistoriaPage({ params }: { params: Promise<{ id: string }> }) {

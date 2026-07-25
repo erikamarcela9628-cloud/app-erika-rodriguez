@@ -3,7 +3,7 @@ import Link from 'next/link'
 import PDFExportButton from './PDFExportButton'
 
 export const metadata = {
-  title: 'Ver Historia Clínica | Dra. Erika Rodríguez',
+  title: 'Ver Historia Clínica | Psicóloga Erika Rodríguez',
 }
 
 export default async function VerHistoriaPage({ params }: { params: Promise<{ id: string }> }) {

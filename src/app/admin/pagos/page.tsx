@@ -3,7 +3,7 @@ import PagosClient from './PagosClient'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Gestión de Pagos | Dra. Erika Rodríguez',
+  title: 'Gestión de Pagos | Psicóloga Erika Rodríguez',
 }
 
 export default async function PagosPage() {
@@ -25,6 +25,16 @@ export default async function PagosPage() {
   if (pagosError && pagosError.code !== '42P01') {
     // 42P01 es undefined table, que ocurrirá si no han corrido el script SQL
     console.error('Error fetching pagos:', pagosError)
+  }
+
+  // Obtener gastos
+  const { data: gastos, error: gastosError } = await supabaseServer
+    .from('gastos')
+    .select('*')
+    .order('fecha_gasto', { ascending: false })
+
+  if (gastosError && gastosError.code !== '42P01') {
+    console.error('Error fetching gastos:', gastosError)
   }
 
   const { data: pacientes } = await supabaseServer
@@ -51,15 +61,15 @@ export default async function PagosPage() {
         </div>
       </div>
 
-      {pagosError?.code === '42P01' ? (
+      {pagosError?.code === '42P01' || gastosError?.code === '42P01' ? (
         <div className="p-4 bg-red-50 border border-red-200 rounded-md">
           <h3 className="text-lg font-medium text-red-800">Tabla no encontrada</h3>
           <p className="text-sm text-red-700 mt-2">
-            La tabla <code>pagos</code> no existe en la base de datos Supabase. Por favor, ejecuta el script SQL provisto en el plan de implementación.
+            Alguna de las tablas (<code>pagos</code> o <code>gastos</code>) no existe en la base de datos Supabase. Por favor, ejecuta el script SQL provisto.
           </p>
         </div>
       ) : (
-        <PagosClient pagos={pagos || []} pacientes={pacientes || []} />
+        <PagosClient pagos={pagos || []} pacientes={pacientes || []} gastos={gastos || []} />
       )}
     </div>
   )

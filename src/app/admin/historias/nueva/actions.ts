@@ -1,7 +1,6 @@
 'use server'
 
 import { supabaseServer } from '@/lib/supabaseServer'
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
 export async function guardarHistoriaClinica(formData: FormData) {
@@ -62,6 +61,9 @@ export async function guardarHistoriaClinica(formData: FormData) {
     plan: formData.get('analisis_diagnostico.plan')
   }
 
+  if (!paciente_id) return { success: false, error: 'El paciente es obligatorio.' }
+  if (!datos_demograficos.fecha_nacimiento) return { success: false, error: 'La fecha de nacimiento es obligatoria.' }
+
   try {
     // Insertar en Supabase
     const { data, error } = await supabaseServer
@@ -81,14 +83,14 @@ export async function guardarHistoriaClinica(formData: FormData) {
 
     if (error) {
       console.error('Error guardando HC (Supabase):', error)
-      throw new Error('No se pudo guardar la historia clínica: ' + error.message)
+      return { success: false, error: 'No se pudo guardar la historia clínica: ' + error.message }
     }
 
     revalidatePath('/admin/historias')
-    redirect('/admin/historias/' + data.id + '/evolucion')
+    return { success: true, id: data.id }
   } catch (error: any) {
     console.error('Error guardando HC:', error)
-    throw error
+    return { success: false, error: error.message || 'Error desconocido' }
   }
 }
 
@@ -150,6 +152,9 @@ export async function actualizarHistoriaClinica(id: string, formData: FormData) 
     plan: formData.get('analisis_diagnostico.plan')
   }
 
+  if (!paciente_id) return { success: false, error: 'El paciente es obligatorio.' }
+  if (!datos_demograficos.fecha_nacimiento) return { success: false, error: 'La fecha de nacimiento es obligatoria.' }
+
   try {
     const { error } = await supabaseServer
       .from('historias_clinicas')
@@ -168,15 +173,15 @@ export async function actualizarHistoriaClinica(id: string, formData: FormData) 
 
     if (error) {
       console.error('Error actualizando HC (Supabase):', error)
-      throw new Error('No se pudo actualizar la historia clínica: ' + error.message)
+      return { success: false, error: 'No se pudo actualizar la historia clínica: ' + error.message }
     }
 
     revalidatePath('/admin/historias')
     revalidatePath(`/admin/historias/${id}`)
-    redirect(`/admin/historias/${id}/evolucion`)
+    return { success: true, id }
   } catch (error: any) {
     console.error('Error actualizando HC:', error)
-    throw error
+    return { success: false, error: error.message || 'Error desconocido' }
   }
 }
 

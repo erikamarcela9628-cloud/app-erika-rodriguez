@@ -2,7 +2,7 @@ import { supabaseServer } from '@/lib/supabaseServer'
 import NuevoPagoForm from './NuevoPagoForm'
 import Link from 'next/link'
 export const metadata = {
-  title: 'Registrar Pago | Dra. Erika Rodríguez',
+  title: 'Registrar Pago | Psicóloga Erika Rodríguez',
 }
 
 export default async function RegistrarPagoPage() {

@@ -63,7 +63,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
         <div className="p-8 md:p-10 text-center border-b border-gray-100 bg-white">
           <img 
             src="https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/logo-erika-.png" 
-            alt="Dra. Erika Rodríguez" 
+            alt="Psicóloga Erika Rodríguez" 
             className="h-24 mx-auto object-contain mb-6"
           />
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#224252]">
@@ -91,13 +91,14 @@ export default async function FirmarContratoPage({ params }: PageProps) {
               <div className="flex flex-col items-center text-center">
                 <img 
                   src="https://erikarodriguezpsicologa.com/wp-content/uploads/2026/07/Diseno-sin-titulo.png" 
-                  alt="Firma Dra. Erika Rodríguez"
-                  className="h-32 object-contain mb-2 mix-blend-multiply"
+                  alt="Firma Psicóloga Erika Rodríguez"
+                  className="object-contain mix-blend-multiply relative z-10"
+                  style={{ maxWidth: '180px', height: 'auto', maxHeight: '120px', marginBottom: '-15px' }}
                 />
-                <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 mx-auto">
+                <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 mx-auto relative z-0">
                   <p className="font-bold text-[#224252] text-sm leading-tight">Erika Marcela Rodríguez López</p>
                   <p className="text-xs text-gray-600 mt-1">Psicóloga • C.C. 1.121.933.244</p>
-                  <p className="text-xs text-gray-600">T.P. 244628</p>
+                  <p className="text-xs text-gray-600">T.P. No. 244628</p>
                 </div>
               </div>
 

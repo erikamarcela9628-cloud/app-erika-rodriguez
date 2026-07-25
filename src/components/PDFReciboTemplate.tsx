@@ -34,7 +34,7 @@ const PDFReciboTemplate = forwardRef<HTMLDivElement, PDFReciboProps>(
             {logoBase64 && (
               <img 
                 src={logoBase64} 
-                alt="Logo Dra. Erika" 
+                alt="Logo Psicóloga Erika" 
                 style={{ height: '70px', objectFit: 'contain' }} 
                 crossOrigin="anonymous"
               />
@@ -46,12 +46,12 @@ const PDFReciboTemplate = forwardRef<HTMLDivElement, PDFReciboProps>(
           </div>
         </div>
 
-        {/* Datos de la Dra. Erika */}
+        {/* Datos de la Psicóloga Erika */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
           <div style={{ fontSize: '13px', lineHeight: '1.5', color: '#4b5563' }}>
             <strong style={{ color: '#224252', fontSize: '15px' }}>Erika Marcela Rodríguez López</strong><br/>
-            Psicóloga Clínica<br/>
-            C.C. 1.121.933.244 | T.P. 244628<br/>
+            Psicóloga<br/>
+            C.C. 1.121.933.244 | T.P. No. 244628<br/>
             Villavicencio, Colombia
           </div>
           <div style={{ fontSize: '13px', lineHeight: '1.5', color: '#4b5563', textAlign: 'right' }}>
