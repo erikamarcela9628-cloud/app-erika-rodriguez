@@ -30,6 +30,18 @@ export async function guardarHistoriaClinica(formData: FormData) {
     vinculos: formData.get('anamnesis.vinculos')
   }
 
+  const datos_demograficos = {
+    fecha_nacimiento: formData.get('datos_demograficos.fecha_nacimiento'),
+    edad_atencion_anos: formData.get('datos_demograficos.edad_atencion_anos'),
+    edad_atencion_meses: formData.get('datos_demograficos.edad_atencion_meses'),
+    genero: formData.get('datos_demograficos.genero'),
+    estado_civil: formData.get('datos_demograficos.estado_civil'),
+    municipio_residencia: formData.get('datos_demograficos.municipio_residencia'),
+    es_estudiante: formData.get('datos_demograficos.es_estudiante') === 'true',
+    es_remitido_colegio: formData.get('datos_demograficos.es_remitido_colegio') === 'true',
+    institucion_remite: formData.get('datos_demograficos.institucion_remite')
+  }
+
   const examen_mental = {
     aspecto_fisico: formData.get('examen_mental.aspecto_fisico'),
     actitud: formData.get('examen_mental.actitud'),
@@ -39,7 +51,7 @@ export async function guardarHistoriaClinica(formData: FormData) {
     sensopercepcion: formData.get('examen_mental.sensopercepcion'),
     pensamiento: formData.get('examen_mental.pensamiento'),
     afectividad: formData.get('examen_mental.afectividad'),
-    riesgo_suicida: formData.get('examen_mental.riesgo_suicida'),
+    nivel_riesgo_suicida: formData.get('examen_mental.nivel_riesgo_suicida'),
     consciencia_enfermedad: formData.get('examen_mental.consciencia_enfermedad')
   }
 
@@ -60,7 +72,8 @@ export async function guardarHistoriaClinica(formData: FormData) {
       antecedentes,
       anamnesis,
       examen_mental,
-      analisis_diagnostico
+      analisis_diagnostico,
+      datos_demograficos
     })
     .select('id')
     .single()

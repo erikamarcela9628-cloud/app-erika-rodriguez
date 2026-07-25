@@ -18,6 +18,7 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
     const anamnesis = historia.anamnesis || {}
     const ex = historia.examen_mental || {}
     const diag = historia.analisis_diagnostico || {}
+    const demo = historia.datos_demograficos || {}
 
     return (
       <div 
@@ -54,7 +55,7 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
         </table>
 
         {/* 1. Datos de Identificación */}
-        <h3 style={{ fontSize: '14px', backgroundColor: '#e5e7eb', padding: '5px', border: '1px solid #000', margin: 0 }}>1. DATOS DE IDENTIFICACIÓN</h3>
+        <h3 style={{ fontSize: '14px', backgroundColor: '#e5e7eb', padding: '5px', border: '1px solid #000', margin: 0 }}>1. DATOS DE IDENTIFICACIÓN Y DEMOGRÁFICOS</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000', marginBottom: '20px', fontSize: '12px' }}>
           <tbody>
             <tr>
@@ -64,6 +65,22 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
             <tr>
               <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Celular:</strong> {pac.telefono}</td>
               <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Email:</strong> {pac.email}</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #000', padding: '5px' }}>
+                <strong>Edad al Ingreso:</strong> {demo.edad_atencion_anos ? `${demo.edad_atencion_anos} años y ${demo.edad_atencion_meses} meses` : 'N/A'}
+              </td>
+              <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Género:</strong> {demo.genero || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Estado Civil:</strong> {demo.estado_civil || 'N/A'}</td>
+              <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Municipio:</strong> {demo.municipio_residencia || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td colSpan={2} style={{ border: '1px solid #000', padding: '5px' }}>
+                <strong>Información Académica / Remisión:</strong>{' '}
+                {demo.es_estudiante ? `Estudiante. ${demo.es_remitido_colegio ? `Remitido por: ${demo.institucion_remite}` : 'Sin remisión institucional.'}` : 'No es estudiante.'}
+              </td>
             </tr>
             <tr>
               <td style={{ border: '1px solid #000', padding: '5px' }}><strong>EPS:</strong> {eps.nombre} ({eps.regimen})</td>
@@ -118,7 +135,12 @@ const PDFHistoriaTemplate = forwardRef<HTMLDivElement, PDFHistoriaProps>(
               <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Afectividad:</strong> {ex.afectividad}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Riesgo Suicida:</strong> {ex.riesgo_suicida}</td>
+              <td style={{ border: '1px solid #000', padding: '5px', backgroundColor: (ex.nivel_riesgo_suicida === 'Medio' || ex.nivel_riesgo_suicida === 'Alto') ? '#fee2e2' : 'transparent' }}>
+                <strong>Nivel Riesgo Suicida:</strong>{' '}
+                <span style={{ fontWeight: (ex.nivel_riesgo_suicida === 'Medio' || ex.nivel_riesgo_suicida === 'Alto') ? 'bold' : 'normal', color: (ex.nivel_riesgo_suicida === 'Medio' || ex.nivel_riesgo_suicida === 'Alto') ? '#991b1b' : 'inherit' }}>
+                  {ex.nivel_riesgo_suicida || ex.riesgo_suicida || 'Sin Riesgo'}
+                </span>
+              </td>
               <td style={{ border: '1px solid #000', padding: '5px' }}><strong>Consciencia de Enfermedad:</strong> {ex.consciencia_enfermedad}</td>
             </tr>
           </tbody>
