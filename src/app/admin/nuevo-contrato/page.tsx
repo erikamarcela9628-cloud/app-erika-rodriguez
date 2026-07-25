@@ -245,39 +245,39 @@ export default function NuevoContratoPage() {
               <div className="border-b border-gray-200 pb-6 pt-2 space-y-8">
                 {/* Tutor 1 */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Representante Legal (Tutor 1)</h3>
+                  <h3 className="text-lg font-semibold text-[#224252] mb-4">Datos del Representante Legal / Tutor 1</h3>
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-4">
-                      <label className="block text-sm font-medium text-gray-800">Nombre Completo</label>
-                      <input required type="text" name="tutor_1_nombre" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Ej: Carlos Pérez" />
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Nombre Completo</label>
+                      <input required type="text" name="tutor_1_nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" placeholder="Ej: Carlos Pérez" />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-800">Parentesco</label>
-                      <select required name="tutor_1_parentesco" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm">
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Parentesco</label>
+                      <select required name="tutor_1_parentesco" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
                         <option value="Padre">Padre</option>
                         <option value="Madre">Madre</option>
                         <option value="Representante Legal">Representante Legal</option>
                       </select>
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-800">Tipo Documento</label>
-                      <select required name="tutor_1_tipo_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm">
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Tipo Documento</label>
+                      <select required name="tutor_1_tipo_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
                         <option value="CC">Cédula</option>
                         <option value="CE">Extranjería</option>
                         <option value="Pasaporte">Pasaporte</option>
                       </select>
                     </div>
                     <div className="sm:col-span-4">
-                      <label className="block text-sm font-medium text-gray-800">Número de Documento</label>
-                      <input required type="text" name="tutor_1_num_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Número de Documento</label>
+                      <input required type="text" name="tutor_1_num_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                     </div>
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-800">Email</label>
-                      <input required type="email" name="tutor_1_email" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Email</label>
+                      <input required type="email" name="tutor_1_email" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                     </div>
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-800">Teléfono (WhatsApp)</label>
-                      <input required type="tel" name="tutor_1_telefono" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" />
+                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Teléfono (WhatsApp)</label>
+                      <input required type="tel" name="tutor_1_telefono" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                     </div>
                   </div>
                 </div>
@@ -315,39 +315,39 @@ export default function NuevoContratoPage() {
                 {/* Tutor 2 (Opcional) */}
                 {requiereTutor2 && (
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h3 className="text-md font-medium text-gray-900 mb-4">Información del Tutor 2</h3>
+                    <h3 className="text-md font-semibold text-[#224252] mb-4">Tutor 2</h3>
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                       <div className="sm:col-span-4">
-                        <label className="block text-sm font-medium text-gray-800">Nombre Completo</label>
-                        <input required type="text" name="tutor_2_nombre" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Nombre Completo</label>
+                        <input required type="text" name="tutor_2_nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-gray-800">Parentesco</label>
-                        <select required name="tutor_2_parentesco" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Parentesco</label>
+                        <select required name="tutor_2_parentesco" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
                           <option value="Madre">Madre</option>
                           <option value="Padre">Padre</option>
                           <option value="Representante Legal">Representante Legal</option>
                         </select>
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-gray-800">Tipo Documento</label>
-                        <select required name="tutor_2_tipo_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Tipo Documento</label>
+                        <select required name="tutor_2_tipo_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
                           <option value="CC">Cédula</option>
                           <option value="CE">Extranjería</option>
                           <option value="Pasaporte">Pasaporte</option>
                         </select>
                       </div>
                       <div className="sm:col-span-4">
-                        <label className="block text-sm font-medium text-gray-800">Número de Documento</label>
-                        <input required type="text" name="tutor_2_num_doc" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Número de Documento</label>
+                        <input required type="text" name="tutor_2_num_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                       </div>
                       <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-800">Email</label>
-                        <input type="email" name="tutor_2_email" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Email</label>
+                        <input type="email" name="tutor_2_email" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                       </div>
                       <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium text-gray-800">Teléfono (WhatsApp)</label>
-                        <input type="tel" name="tutor_2_telefono" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white" />
+                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Teléfono (WhatsApp)</label>
+                        <input type="tel" name="tutor_2_telefono" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
                       </div>
                     </div>
                   </div>
