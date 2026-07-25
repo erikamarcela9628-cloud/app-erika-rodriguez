@@ -248,36 +248,36 @@ export default function NuevoContratoPage() {
                   <h3 className="text-lg font-semibold text-[#224252] mb-4">Datos del Representante Legal / Tutor 1</h3>
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-4">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Nombre Completo</label>
-                      <input required type="text" name="tutor_1_nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" placeholder="Ej: Carlos Pérez" />
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Nombre Completo</label>
+                      <input required type="text" name="tutor_1_nombre" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: Carlos Pérez" />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Parentesco</label>
-                      <select required name="tutor_1_parentesco" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Parentesco</label>
+                      <select required name="tutor_1_parentesco" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                         <option value="Padre">Padre</option>
                         <option value="Madre">Madre</option>
                         <option value="Representante Legal">Representante Legal</option>
                       </select>
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Tipo Documento</label>
-                      <select required name="tutor_1_tipo_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Tipo Documento</label>
+                      <select required name="tutor_1_tipo_doc" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                         <option value="CC">Cédula</option>
                         <option value="CE">Extranjería</option>
                         <option value="Pasaporte">Pasaporte</option>
                       </select>
                     </div>
                     <div className="sm:col-span-4">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Número de Documento</label>
-                      <input required type="text" name="tutor_1_num_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Número de Documento</label>
+                      <input required type="text" name="tutor_1_num_doc" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: 1020304050" />
                     </div>
                     <div className="sm:col-span-3">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Email</label>
-                      <input required type="email" name="tutor_1_email" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Email</label>
+                      <input required type="email" name="tutor_1_email" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="ejemplo@correo.com" />
                     </div>
                     <div className="sm:col-span-3">
-                      <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Teléfono (WhatsApp)</label>
-                      <input required type="tel" name="tutor_1_telefono" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                      <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Teléfono (WhatsApp)</label>
+                      <input required type="tel" name="tutor_1_telefono" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: 3001234567" />
                     </div>
                   </div>
                 </div>
@@ -318,36 +318,36 @@ export default function NuevoContratoPage() {
                     <h3 className="text-md font-semibold text-[#224252] mb-4">Tutor 2</h3>
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                       <div className="sm:col-span-4">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Nombre Completo</label>
-                        <input required type="text" name="tutor_2_nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Nombre Completo</label>
+                        <input required type="text" name="tutor_2_nombre" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: María Gómez" />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Parentesco</label>
-                        <select required name="tutor_2_parentesco" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Parentesco</label>
+                        <select required name="tutor_2_parentesco" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                           <option value="Madre">Madre</option>
                           <option value="Padre">Padre</option>
                           <option value="Representante Legal">Representante Legal</option>
                         </select>
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Tipo Documento</label>
-                        <select required name="tutor_2_tipo_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white focus:ring-blue-600 focus:border-blue-600">
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Tipo Documento</label>
+                        <select required name="tutor_2_tipo_doc" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                           <option value="CC">Cédula</option>
                           <option value="CE">Extranjería</option>
                           <option value="Pasaporte">Pasaporte</option>
                         </select>
                       </div>
                       <div className="sm:col-span-4">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Número de Documento</label>
-                        <input required type="text" name="tutor_2_num_doc" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Número de Documento</label>
+                        <input required type="text" name="tutor_2_num_doc" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: 1020304051" />
                       </div>
                       <div className="sm:col-span-3">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Email</label>
-                        <input type="email" name="tutor_2_email" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Email</label>
+                        <input type="email" name="tutor_2_email" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="ejemplo2@correo.com" />
                       </div>
                       <div className="sm:col-span-3">
-                        <label className="block text-sm text-slate-800 dark:text-slate-200 font-medium">Teléfono (WhatsApp)</label>
-                        <input type="tel" name="tutor_2_telefono" className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm text-slate-900 bg-white placeholder:text-slate-400 focus:ring-blue-600 focus:border-blue-600" />
+                        <label className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">Teléfono (WhatsApp)</label>
+                        <input type="tel" name="tutor_2_telefono" className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: 3001234568" />
                       </div>
                     </div>
                   </div>
