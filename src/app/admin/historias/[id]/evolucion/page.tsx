@@ -38,7 +38,7 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
     <div className="max-w-4xl mx-auto py-8 px-4 font-sans">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Evoluciones Terapéuticas</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Evoluciones Terapéuticas</h1>
           <p className="mt-1 text-sm text-gray-500">Paciente: {(historia.pacientes as any)?.nombre_completo}</p>
         </div>
         <Link href={`/admin/historias/${historia.id}`} className="text-sm font-medium text-[#0e787a] hover:underline">
@@ -61,23 +61,23 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-800">Fecha de Sesión *</label>
-                  <input required type="datetime-local" name="fecha_sesion" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" />
+                  <label className="block text-sm font-semibold text-slate-800">Fecha de Sesión *</label>
+                  <input required type="datetime-local" name="fecha_sesion" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-800">Evolución Detallada *</label>
-                  <textarea required name="evolucion_terapeutica" rows={5} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Temas tratados, técnicas, respuestas del paciente..."></textarea>
+                  <label className="block text-sm font-semibold text-slate-800">Evolución Detallada *</label>
+                  <textarea required name="evolucion_terapeutica" rows={5} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Temas tratados, técnicas, respuestas del paciente..."></textarea>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-800">Observaciones</label>
-                  <textarea name="observaciones_valoracion" rows={3} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Anotaciones extra..."></textarea>
+                  <label className="block text-sm font-semibold text-slate-800">Observaciones</label>
+                  <textarea name="observaciones_valoracion" rows={3} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Anotaciones extra..."></textarea>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-800">Diagnóstico CIE-10 Actualizado</label>
-                  <input type="text" name="diagnostico_cie10" className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Opcional. Ej: F41.1" />
+                  <label className="block text-sm font-semibold text-slate-800">Diagnóstico CIE-10 Actualizado</label>
+                  <input type="text" name="diagnostico_cie10" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Opcional. Ej: F41.1" />
                 </div>
 
                 <button type="submit" className="w-full bg-[#0e787a] py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-[#0b5c5d]">
@@ -90,7 +90,7 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
 
         {/* Historial de Evoluciones */}
         <div className="md:col-span-2 space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 border-b pb-2">Historial de Sesiones</h2>
+          <h2 className="text-xl font-bold text-slate-900 border-b pb-2">Historial de Sesiones</h2>
           {evoluciones?.length === 0 ? (
             <p className="text-gray-500">No hay sesiones registradas.</p>
           ) : (

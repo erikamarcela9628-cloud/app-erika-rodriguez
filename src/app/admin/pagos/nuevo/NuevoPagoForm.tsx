@@ -1,0 +1,255 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { registrarPago } from './actions'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+export default function NuevoPagoForm({ pacientes }: { pacientes: any[] }) {
+  const [esMenor, setEsMenor] = useState(false)
+  const [menorNombre, setMenorNombre] = useState('')
+  const [concepto, setConcepto] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
+  const router = useRouter()
+
+  useEffect(() => {
+    if (esMenor && menorNombre.trim()) {
+      setConcepto(`Atención Psicológica para el/la menor ${menorNombre.trim()}`)
+    } else if (!esMenor && concepto.startsWith('Atención Psicológica para el/la menor')) {
+      setConcepto('')
+    }
+  }, [esMenor, menorNombre])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setErrorMsg('')
+    const formData = new FormData(e.currentTarget)
+    
+    // Añadimos el valor de es_menor explícitamente ya que los checkboxes a veces no se envían si no están marcados
+    formData.set('es_menor', esMenor ? 'true' : 'false')
+
+    try {
+      await registrarPago(formData)
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error desconocido al registrar el pago')
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <form onSubmit={handleSubmit} className="p-8">
+        
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-100">
+            {errorMsg}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+          {/* Paciente */}
+          <div className="sm:col-span-6">
+            <label htmlFor="paciente_id" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Paciente Registrado
+            </label>
+            <div className="mt-1">
+              <select
+                required
+                id="paciente_id"
+                name="paciente_id"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+              >
+                <option value="">Selecciona un paciente...</option>
+                {pacientes?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre_completo} ({p.tipo_documento} {p.numero_documento})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Menor de edad Checkbox */}
+          <div className="sm:col-span-6 flex items-center bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2">
+            <input
+              id="es_menor"
+              name="es_menor"
+              type="checkbox"
+              checked={esMenor}
+              onChange={(e) => setEsMenor(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-[#0e787a] focus:ring-[#0e787a]"
+            />
+            <label htmlFor="es_menor" className="ml-3 block text-sm font-semibold text-slate-800 opacity-100">
+              ¿El pago es por atención a un menor de edad?
+            </label>
+          </div>
+
+          {/* Campos de Menor de Edad */}
+          {esMenor && (
+            <div className="sm:col-span-6 bg-slate-50 p-6 rounded-lg border border-slate-200 space-y-6">
+              <h3 className="text-md font-semibold text-[#224252]">Datos del Pagador y el Menor</h3>
+              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                
+                <div className="sm:col-span-3">
+                  <label htmlFor="pagador_nombre" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+                    Nombre del Pagador / Tutor
+                  </label>
+                  <input
+                    type="text"
+                    name="pagador_nombre"
+                    id="pagador_nombre"
+                    required={esMenor}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                    placeholder="Ej: Carlos Pérez"
+                  />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="pagador_cedula" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+                    Cédula del Pagador / Tutor
+                  </label>
+                  <input
+                    type="text"
+                    name="pagador_cedula"
+                    id="pagador_cedula"
+                    required={esMenor}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                    placeholder="Ej: 1020304050"
+                  />
+                </div>
+
+                <div className="sm:col-span-6">
+                  <label htmlFor="menor_nombre" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+                    Nombre del Menor de Edad
+                  </label>
+                  <input
+                    type="text"
+                    name="menor_nombre"
+                    id="menor_nombre"
+                    required={esMenor}
+                    value={menorNombre}
+                    onChange={(e) => setMenorNombre(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                    placeholder="Ej: Juan Pérez"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Monto */}
+          <div className="sm:col-span-3">
+            <label htmlFor="monto" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Monto Pagado ($ COP)
+            </label>
+            <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span className="text-slate-500 sm:text-sm">$</span>
+              </div>
+              <input
+                type="number"
+                name="monto"
+                id="monto"
+                required
+                min="0"
+                step="0.01"
+                className="w-full pl-7 px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          {/* Método de Pago */}
+          <div className="sm:col-span-3">
+            <label htmlFor="metodo_pago" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Método de Pago
+            </label>
+            <div className="mt-1">
+              <select
+                required
+                id="metodo_pago"
+                name="metodo_pago"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+              >
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                <option value="Nequi">Nequi</option>
+                <option value="Daviplata">Daviplata</option>
+                <option value="Tarjeta de Crédito / Débito">Tarjeta de Crédito / Débito</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Referencia */}
+          <div className="sm:col-span-6">
+            <label htmlFor="referencia" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Referencia / Número de Comprobante <span className="text-slate-400 font-normal">(Opcional)</span>
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                name="referencia"
+                id="referencia"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                placeholder="Ej: Aprobación #12345 o Transacción Nequi"
+              />
+            </div>
+          </div>
+
+          {/* Concepto */}
+          <div className="sm:col-span-6">
+            <label htmlFor="concepto" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Concepto
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                name="concepto"
+                id="concepto"
+                required
+                value={concepto}
+                onChange={(e) => setConcepto(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                placeholder="Ej: Sesión Individual de Psicología"
+              />
+            </div>
+          </div>
+
+          {/* Notas */}
+          <div className="sm:col-span-6">
+            <label htmlFor="notas" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+              Notas internas <span className="text-slate-400 font-normal">(Opcional)</span>
+            </label>
+            <div className="mt-1">
+              <textarea
+                id="notas"
+                name="notas"
+                rows={3}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                placeholder="Anotaciones privadas sobre este pago..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 mt-8 border-t border-slate-200 flex justify-end">
+          <Link
+            href="/admin/pagos"
+            className="bg-white py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e787a] mr-4"
+          >
+            Cancelar
+          </Link>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#0e787a] hover:bg-[#224252] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e787a] disabled:opacity-50"
+          >
+            {isSubmitting ? 'Registrando...' : 'Generar Recibo de Pago'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}

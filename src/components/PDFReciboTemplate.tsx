@@ -60,27 +60,31 @@ const PDFReciboTemplate = forwardRef<HTMLDivElement, PDFReciboProps>(
           </div>
         </div>
 
-        {/* Datos del Paciente */}
+        {/* Datos del Paciente / Pagador */}
         <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '40px' }}>
           <h3 style={{ margin: '0 0 15px 0', fontSize: '15px', color: '#0e787a', borderBottom: '1px solid #cbd5e1', paddingBottom: '8px' }}>
-            Información del Paciente
+            {pago.es_menor ? 'Recibido de' : 'Información del Paciente'}
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '14px' }}>
             <div>
               <strong style={{ color: '#475569' }}>Nombre:</strong><br/>
-              <span style={{ color: '#0f172a', fontWeight: '500' }}>{paciente?.nombre_completo}</span>
+              <span style={{ color: '#0f172a', fontWeight: '500' }}>
+                {pago.es_menor ? pago.pagador_nombre : paciente?.nombre_completo}
+              </span>
             </div>
             <div>
               <strong style={{ color: '#475569' }}>Documento de Identidad:</strong><br/>
-              <span style={{ color: '#0f172a' }}>{paciente?.tipo_documento} {paciente?.numero_documento}</span>
+              <span style={{ color: '#0f172a' }}>
+                {pago.es_menor ? `C.C. ${pago.pagador_cedula}` : `${paciente?.tipo_documento} ${paciente?.numero_documento}`}
+              </span>
             </div>
-            {paciente?.telefono && (
+            {!pago.es_menor && paciente?.telefono && (
               <div>
                 <strong style={{ color: '#475569' }}>Teléfono:</strong><br/>
                 <span style={{ color: '#0f172a' }}>{paciente?.telefono}</span>
               </div>
             )}
-            {paciente?.email && (
+            {!pago.es_menor && paciente?.email && (
               <div>
                 <strong style={{ color: '#475569' }}>Email:</strong><br/>
                 <span style={{ color: '#0f172a' }}>{paciente?.email}</span>

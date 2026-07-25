@@ -12,6 +12,11 @@ export async function registrarPago(formData: FormData) {
   const concepto = formData.get('concepto') as string
   const notas = formData.get('notas') as string
 
+  const es_menor = formData.get('es_menor') === 'true'
+  const pagador_nombre = formData.get('pagador_nombre') as string
+  const pagador_cedula = formData.get('pagador_cedula') as string
+  const menor_nombre = formData.get('menor_nombre') as string
+
   // Generar ID de Recibo único: REC-YYYYMM-XXXX
   const date = new Date()
   const yearMonth = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}`
@@ -28,6 +33,10 @@ export async function registrarPago(formData: FormData) {
       concepto,
       notas: notas || null,
       numero_recibo,
+      es_menor,
+      pagador_nombre: pagador_nombre || null,
+      pagador_cedula: pagador_cedula || null,
+      menor_nombre: menor_nombre || null,
     })
 
   if (error) {
