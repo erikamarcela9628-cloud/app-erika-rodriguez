@@ -61,7 +61,13 @@ export default function HistoriasClient({ historias, evolucionesCount }: Histori
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                     <Link href={`/admin/historias/${historia.id}`} className="text-[#0e787a] hover:text-[#224252]">
-                      Ver/Editar Anamnesis
+                      Ver Detalle
+                    </Link>
+                    <span className="text-gray-300">|</span>
+                    <Link href={`/admin/historias/${historia.id}/editar`} className="text-[#f59e0b] hover:text-[#d97706]" title="Editar Historia">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
                     </Link>
                     <span className="text-gray-300">|</span>
                     <Link href={`/admin/historias/${historia.id}/evolucion`} className="text-[#25D366] hover:text-[#128C7E]">

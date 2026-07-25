@@ -12,12 +12,12 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
   const [activeTab, setActiveTab] = useState(1)
   
   // Nuevos estados para demografía
-  const [fechaNacimiento, setFechaNacimiento] = useState('')
-  const [edadAnos, setEdadAnos] = useState('')
-  const [edadMeses, setEdadMeses] = useState('')
-  const [esEstudiante, setEsEstudiante] = useState(false)
-  const [esRemitido, setEsRemitido] = useState(false)
-  const [riesgoSuicida, setRiesgoSuicida] = useState('Sin Riesgo')
+  const [fechaNacimiento, setFechaNacimiento] = useState(initialData?.datos_demograficos?.fecha_nacimiento || '')
+  const [edadAnos, setEdadAnos] = useState(initialData?.datos_demograficos?.edad_atencion_anos || '')
+  const [edadMeses, setEdadMeses] = useState(initialData?.datos_demograficos?.edad_atencion_meses || '')
+  const [esEstudiante, setEsEstudiante] = useState(initialData?.datos_demograficos?.es_estudiante || false)
+  const [esRemitido, setEsRemitido] = useState(initialData?.datos_demograficos?.es_remitido_colegio || false)
+  const [riesgoSuicida, setRiesgoSuicida] = useState(initialData?.examen_mental?.nivel_riesgo_suicida || 'Sin Riesgo')
   
   // Cálculo de edad
   useEffect(() => {
@@ -96,6 +96,8 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
       </div>
 
       <form action={formAction} onKeyDown={handleKeyDown} className="p-8">
+        {/* Hidden inputs if editing */}
+        {initialData && <input type="hidden" name="id" value={initialData.id} />}
         
         {/* TAB 1: DATOS GENERALES */}
         <div className={activeTab === 1 ? 'block' : 'hidden'}>
@@ -103,7 +105,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-8">
             <div className="sm:col-span-6">
               <label htmlFor="paciente_id" className="block text-sm font-semibold text-slate-800">Seleccionar Paciente *</label>
-              <select required id="paciente_id" name="paciente_id" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select required id="paciente_id" name="paciente_id" defaultValue={initialData?.paciente_id} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Buscar paciente...</option>
                 {pacientes.map(p => (
                   <option key={p.id} value={p.id}>{p.nombre_completo} - {p.numero_documento}</option>
@@ -128,7 +130,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Género / Sexo *</label>
-              <select required name="datos_demograficos.genero" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select required name="datos_demograficos.genero" defaultValue={initialData?.datos_demograficos?.genero} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Seleccionar...</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
@@ -138,7 +140,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Estado Civil *</label>
-              <select required name="datos_demograficos.estado_civil" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select required name="datos_demograficos.estado_civil" defaultValue={initialData?.datos_demograficos?.estado_civil} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="">Seleccionar...</option>
                 <option value="Soltero/a">Soltero/a</option>
                 <option value="Casado/a">Casado/a</option>
@@ -151,7 +153,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Municipio de Residencia *</label>
-              <input required type="text" name="datos_demograficos.municipio_residencia" defaultValue="Villavicencio" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input required type="text" name="datos_demograficos.municipio_residencia" defaultValue={initialData?.datos_demograficos?.municipio_residencia || "Villavicencio"} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
           </div>
 
@@ -197,6 +199,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
                       type="text"
                       id="institucion_remite"
                       name="datos_demograficos.institucion_remite"
+                      defaultValue={initialData?.datos_demograficos?.institucion_remite}
                       className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
                       placeholder="Ej: Colegio Departamental La Esperanza"
                     />
@@ -210,19 +213,19 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-8">
             <div className="sm:col-span-3">
               <label className="block text-sm font-semibold text-slate-800">Nombre del Acudiente</label>
-              <input type="text" name="acudiente.nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="acudiente.nombre" defaultValue={initialData?.acudiente?.nombre} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
             <div className="sm:col-span-3">
               <label className="block text-sm font-semibold text-slate-800">Parentesco</label>
-              <input type="text" name="acudiente.parentesco" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="acudiente.parentesco" defaultValue={initialData?.acudiente?.parentesco} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Teléfono</label>
-              <input type="text" name="acudiente.telefono" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="acudiente.telefono" defaultValue={initialData?.acudiente?.telefono} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
             <div className="sm:col-span-4">
               <label className="block text-sm font-semibold text-slate-800">Dirección</label>
-              <input type="text" name="acudiente.direccion" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="acudiente.direccion" defaultValue={initialData?.acudiente?.direccion} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
           </div>
 
@@ -230,11 +233,11 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-8">
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Nombre EPS</label>
-              <input type="text" name="eps.nombre" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
+              <input type="text" name="eps.nombre" defaultValue={initialData?.eps?.nombre} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" />
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Régimen</label>
-              <select name="eps.regimen" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="eps.regimen" defaultValue={initialData?.eps?.regimen || 'Contributivo'} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Contributivo">Contributivo</option>
                 <option value="Subsidiado">Subsidiado</option>
                 <option value="Especial">Especial</option>
@@ -243,7 +246,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800">Tipo de Afiliado</label>
-              <select name="eps.tipo_afiliado" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="eps.tipo_afiliado" defaultValue={initialData?.eps?.tipo_afiliado || 'Cotizante'} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Cotizante">Cotizante</option>
                 <option value="Beneficiario">Beneficiario</option>
               </select>
@@ -257,7 +260,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1 mb-8">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Salud Física y Mental Personal / Familiar</label>
-              <textarea name="antecedentes.personales_familiares" rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Describa antecedentes médicos o psiquiátricos..."></textarea>
+              <textarea name="antecedentes.personales_familiares" defaultValue={initialData?.antecedentes?.personales_familiares} rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Describa antecedentes médicos o psiquiátricos..."></textarea>
             </div>
           </div>
 
@@ -265,15 +268,15 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1 mb-8">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Motivo de Consulta (Referido por el paciente)</label>
-              <textarea required name="anamnesis.motivo_consulta" rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder='"Vengo porque..."'></textarea>
+              <textarea required name="anamnesis.motivo_consulta" defaultValue={initialData?.anamnesis?.motivo_consulta} rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder='"Vengo porque..."'></textarea>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Definición del Problema (Perspectiva profesional)</label>
-              <textarea required name="anamnesis.definicion_problema" rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Análisis clínico del problema actual..."></textarea>
+              <textarea required name="anamnesis.definicion_problema" defaultValue={initialData?.anamnesis?.definicion_problema} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Análisis clínico del problema actual..."></textarea>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Vínculos Afectivos, Comunicación y Contexto</label>
-              <textarea name="anamnesis.vinculos" rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
+              <textarea name="anamnesis.vinculos" defaultValue={initialData?.anamnesis?.vinculos} rows={3} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
             </div>
           </div>
         </div>
@@ -284,14 +287,14 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 mb-8">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Aspecto Físico</label>
-              <select name="examen_mental.aspecto_fisico" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.aspecto_fisico" defaultValue={initialData?.examen_mental?.aspecto_fisico || 'Adecuado'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Adecuado">Adecuado</option>
                 <option value="No Adecuado">No Adecuado</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Actitud</label>
-              <select name="examen_mental.actitud" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.actitud" defaultValue={initialData?.examen_mental?.actitud || 'Adecuada'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Adecuada">Adecuada (Colaboradora)</option>
                 <option value="Hostil">Hostil / Defensiva</option>
                 <option value="Indiferente">Indiferente</option>
@@ -301,7 +304,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Estado de Consciencia</label>
-              <select name="examen_mental.consciencia" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.consciencia" defaultValue={initialData?.examen_mental?.consciencia || 'Alerta'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Alerta">Alerta</option>
                 <option value="Hiperalerta">Hiperalerta</option>
                 <option value="Somnoliento">Somnoliento</option>
@@ -310,7 +313,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Lenguaje y Habla</label>
-              <select name="examen_mental.lenguaje" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.lenguaje" defaultValue={initialData?.examen_mental?.lenguaje || 'Organizado y Coherente'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Organizado y Coherente">Organizado y Coherente</option>
                 <option value="Desorganizado">Desorganizado</option>
                 <option value="Taquilalia">Taquilalia</option>
@@ -320,7 +323,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Orientación (Tiempo/Espacio/Persona)</label>
-              <select name="examen_mental.orientacion" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.orientacion" defaultValue={initialData?.examen_mental?.orientacion || 'Orientado'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Orientado">Orientado globalmente</option>
                 <option value="Desorientado en tiempo">Desorientado en tiempo</option>
                 <option value="Desorientado en espacio">Desorientado en espacio</option>
@@ -329,7 +332,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Sensopercepción</label>
-              <select name="examen_mental.sensopercepcion" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.sensopercepcion" defaultValue={initialData?.examen_mental?.sensopercepcion || 'Sin alteraciones'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Sin alteraciones">Sin alteraciones evidentes</option>
                 <option value="Alucinaciones visuales">Alucinaciones visuales</option>
                 <option value="Alucinaciones auditivas">Alucinaciones auditivas</option>
@@ -338,11 +341,11 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Curso y Contenido del Pensamiento</label>
-              <input type="text" name="examen_mental.pensamiento" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Lógico, fuga de ideas, ideas delirantes..." defaultValue="Lógico y coherente" />
+              <input type="text" name="examen_mental.pensamiento" defaultValue={initialData?.examen_mental?.pensamiento || 'Lógico y coherente'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Lógico, fuga de ideas, ideas delirantes..." />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-1">Afectividad</label>
-              <input type="text" name="examen_mental.afectividad" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Eutímico, hipertímico, aplanado..." defaultValue="Eutímico" />
+              <input type="text" name="examen_mental.afectividad" defaultValue={initialData?.examen_mental?.afectividad || 'Eutímico'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Eutímico, hipertímico, aplanado..." />
             </div>
             
             <div className="sm:col-span-2 bg-slate-50 p-6 rounded-lg border border-slate-200 mt-4">
@@ -370,7 +373,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-slate-800 mb-1">Consciencia de Enfermedad</label>
-              <select name="examen_mental.consciencia_enfermedad" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="examen_mental.consciencia_enfermedad" defaultValue={initialData?.examen_mental?.consciencia_enfermedad || 'Presente'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Presente">Presente</option>
                 <option value="Ausente">Ausente</option>
                 <option value="Parcial">Parcial</option>
@@ -385,17 +388,17 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           
           <div className="mb-6">
             <label className="block text-sm font-semibold text-slate-800 mb-2">Análisis Objetivo (Observaciones del profesional)</label>
-            <textarea name="analisis_diagnostico.analisis" rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
+            <textarea name="analisis_diagnostico.analisis" defaultValue={initialData?.analisis_diagnostico?.analisis} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
           </div>
 
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 mb-6">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Diagnóstico Principal (CIE-10)</label>
-              <input type="text" name="analisis_diagnostico.cie10" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: F32.0 Episodio depresivo leve" />
+              <input type="text" name="analisis_diagnostico.cie10" defaultValue={initialData?.analisis_diagnostico?.cie10} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: F32.0 Episodio depresivo leve" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Tipo de Tratamiento Propuesto</label>
-              <select name="analisis_diagnostico.tipo_tratamiento" className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
+              <select name="analisis_diagnostico.tipo_tratamiento" defaultValue={initialData?.analisis_diagnostico?.tipo_tratamiento || 'Terapia Individual'} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]">
                 <option value="Terapia Individual">Terapia Individual</option>
                 <option value="Terapia de Pareja">Terapia de Pareja</option>
                 <option value="Terapia de Familia">Terapia de Familia</option>
@@ -406,7 +409,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
 
           <div className="mb-6">
             <label className="block text-sm font-semibold text-slate-800 mb-2">Plan de Intervención / Recomendaciones</label>
-            <textarea name="analisis_diagnostico.plan" rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
+            <textarea name="analisis_diagnostico.plan" defaultValue={initialData?.analisis_diagnostico?.plan} rows={4} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"></textarea>
           </div>
         </div>
 
@@ -434,7 +437,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
               type="submit"
               className="bg-[#0e787a] py-2 px-8 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-[#0b5c5d]"
             >
-              Guardar Historia Clínica
+              {initialData ? 'Actualizar Historia Clínica' : 'Guardar Historia Clínica'}
             </button>
           )}
         </div>
