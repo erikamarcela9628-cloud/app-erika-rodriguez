@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { logout } from '@/app/login/actions'
 
 export default function AdminNavbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -55,13 +56,19 @@ export default function AdminNavbar() {
               </div>
             </div>
             
-            <div className="hidden lg:ml-6 lg:flex lg:items-center">
+            <div className="hidden lg:ml-6 lg:flex lg:items-center gap-4">
               <Link
                 href="/admin/nuevo-contrato"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#0e787a] hover:bg-[#224252] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e787a] transition-colors"
               >
                 + Crear Contrato
               </Link>
+              <button
+                onClick={() => logout()}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              >
+                Cerrar Sesión
+              </button>
             </div>
             
             {/* Mobile Menu Button */}
@@ -116,6 +123,12 @@ export default function AdminNavbar() {
                 {link.name}
               </Link>
             ))}
+            <button
+              onClick={() => { setIsOpen(false); logout(); }}
+              className="block w-full text-left pl-3 pr-4 py-3 border-l-4 border-transparent text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 text-base font-medium transition-colors"
+            >
+              Cerrar Sesión
+            </button>
           </div>
         </div>
       </nav>
