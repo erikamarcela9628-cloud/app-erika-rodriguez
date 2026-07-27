@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import AITextArea from './AITextArea'
+import SugerirDiagnosticoBtn from './SugerirDiagnosticoBtn'
 
 interface HistoriaFormProps {
   pacientes: any[]
@@ -20,6 +21,9 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
   const [esEstudiante, setEsEstudiante] = useState(initialData?.datos_demograficos?.es_estudiante || false)
   const [esRemitido, setEsRemitido] = useState(initialData?.datos_demograficos?.es_remitido_colegio || false)
   const [riesgoSuicida, setRiesgoSuicida] = useState(initialData?.examen_mental?.nivel_riesgo_suicida || 'Sin Riesgo')
+  const [cie10, setCie10] = useState(initialData?.analisis_diagnostico?.cie10 || '')
+
+  const formRef = useRef<HTMLFormElement>(null)
   
   // Cálculo de edad
   useEffect(() => {
@@ -61,6 +65,24 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
         e.preventDefault()
       }
     }
+  }
+
+  const getDatosForSugerencias = () => {
+    if (!formRef.current) return { motivoConsulta: '', examenMental: '' }
+    
+    const formData = new FormData(formRef.current)
+    const motivoConsulta = formData.get('anamnesis.motivo_consulta') as string || ''
+    
+    // Recopilar un breve resumen del examen mental
+    const aspecto = formData.get('examen_mental.aspecto_fisico') as string || ''
+    const actitud = formData.get('examen_mental.actitud') as string || ''
+    const pensamiento = formData.get('examen_mental.pensamiento') as string || ''
+    const afectividad = formData.get('examen_mental.afectividad') as string || ''
+    const lenguaje = formData.get('examen_mental.lenguaje') as string || ''
+    
+    const examenMental = `Aspecto: ${aspecto}. Actitud: ${actitud}. Lenguaje: ${lenguaje}. Pensamiento: ${pensamiento}. Afectividad: ${afectividad}.`
+    
+    return { motivoConsulta, examenMental }
   }
 
   const handleSubmit = async (formData: FormData) => {
@@ -122,7 +144,7 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
         </button>
       </div>
 
-      <form action={handleSubmit} onKeyDown={handleKeyDown} className="p-8">
+      <form ref={formRef} action={handleSubmit} onKeyDown={handleKeyDown} className="p-8">
         {/* Hidden inputs if editing */}
         {initialData && <input type="hidden" name="id" value={initialData.id} />}
         
@@ -435,7 +457,18 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 mb-6">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Diagnóstico Principal (CIE-10)</label>
-              <input type="text" name="analisis_diagnostico.cie10" defaultValue={initialData?.analisis_diagnostico?.cie10} className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" placeholder="Ej: F32.0 Episodio depresivo leve" />
+              <SugerirDiagnosticoBtn 
+                getDatos={getDatosForSugerencias} 
+                onSelect={(code) => setCie10(code)} 
+              />
+              <input 
+                type="text" 
+                name="analisis_diagnostico.cie10" 
+                value={cie10}
+                onChange={(e) => setCie10(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]" 
+                placeholder="Ej: F32.0 Episodio depresivo leve" 
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2">Tipo de Tratamiento Propuesto</label>

@@ -1,6 +1,7 @@
 import { supabaseServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import { guardarEvolucion } from './actions'
+import GenerarInformeBtn from './GenerarInformeBtn'
 
 export const metadata = {
   title: 'Evoluciones Terapéuticas | Psicóloga Erika Rodríguez',
@@ -90,6 +91,8 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
 
         {/* Historial de Evoluciones */}
         <div className="md:col-span-2 space-y-6">
+          <GenerarInformeBtn evoluciones={evoluciones || []} />
+          
           <h2 className="text-xl font-bold text-slate-900 border-b pb-2">Historial de Sesiones</h2>
           {evoluciones?.length === 0 ? (
             <p className="text-gray-500">No hay sesiones registradas.</p>
