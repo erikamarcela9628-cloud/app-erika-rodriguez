@@ -13,7 +13,17 @@ interface PDFExportButtonProps {
 export default function PDFExportButton({ historia, evoluciones }: PDFExportButtonProps) {
   const [generandoPDF, setGenerandoPDF] = useState(false)
   const [pdfData, setPdfData] = useState<{ logoBase64: string, firmaBase64: string } | null>(null)
+  const [exportMode, setExportMode] = useState('Ambos')
   const pdfRef = useRef<HTMLDivElement>(null)
+  
+  const esPareja = historia?.datos_demograficos?.modalidad === 'Pareja'
+
+  const evolucionesFiltradas = evoluciones.filter(evol => {
+    if (!esPareja || exportMode === 'Ambos') return true
+    if (exportMode === 'Paciente A') return evol.asistente_sesion === 'Paciente A' || evol.asistente_sesion === 'Ambos'
+    if (exportMode === 'Paciente B') return evol.asistente_sesion === 'Paciente B' || evol.asistente_sesion === 'Ambos'
+    return true
+  })
 
   async function getBase64ImageFromUrl(imageUrl: string) {
     try {
@@ -86,11 +96,22 @@ export default function PDFExportButton({ historia, evoluciones }: PDFExportButt
   }
 
   return (
-    <>
+    <div className="flex items-center gap-2">
+      {esPareja && (
+        <select 
+          value={exportMode} 
+          onChange={(e) => setExportMode(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+        >
+          <option value="Ambos">HC Conjunta</option>
+          <option value="Paciente A">HC Individual (Paciente A)</option>
+          <option value="Paciente B">HC Individual (Paciente B)</option>
+        </select>
+      )}
       <button
         onClick={handleExportPDF}
         disabled={generandoPDF}
-        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] disabled:opacity-50"
+        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] disabled:opacity-50 transition-colors"
       >
         {generandoPDF ? 'Generando...' : 'Exportar HC (PDF)'}
       </button>
@@ -101,12 +122,13 @@ export default function PDFExportButton({ historia, evoluciones }: PDFExportButt
           <PDFHistoriaTemplate 
             ref={pdfRef}
             historia={historia}
-            evoluciones={evoluciones}
+            evoluciones={evolucionesFiltradas}
+            exportMode={exportMode}
             logoBase64={pdfData.logoBase64}
             firmaBase64={pdfData.firmaBase64}
           />
         )}
       </div>
-    </>
+    </div>
   )
 }

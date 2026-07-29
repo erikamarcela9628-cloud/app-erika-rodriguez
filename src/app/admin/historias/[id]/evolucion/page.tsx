@@ -13,9 +13,11 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
   // Obtener historia y paciente
   const { data: historia, error } = await supabaseServer
     .from('historias_clinicas')
-    .select('id, paciente_id, pacientes(nombre_completo, numero_documento)')
+    .select('id, paciente_id, datos_demograficos, pacientes(nombre_completo, numero_documento)')
     .eq('id', id)
     .single()
+
+  const esPareja = historia?.datos_demograficos?.modalidad === 'Pareja'
 
   if (error || !historia) {
     return (
@@ -65,6 +67,17 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
                   <label className="block text-sm font-semibold text-slate-800">Fecha de Sesión *</label>
                   <input required type="datetime-local" name="fecha_sesion" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" />
                 </div>
+
+                {esPareja && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-800">Atención realizada a *</label>
+                    <select required name="asistente_sesion" defaultValue="Ambos" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a]">
+                      <option value="Ambos">👥 Ambos (Conjunta)</option>
+                      <option value="Paciente A">👤 Paciente A (Individual)</option>
+                      <option value="Paciente B">👤 Paciente B (Individual)</option>
+                    </select>
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-800">Evolución Detallada *</label>
@@ -101,7 +114,14 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
               <div key={evol.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="flex justify-between items-center mb-4 border-b pb-2">
                   <h3 className="font-bold text-[#224252]">Sesión N° {evol.numero_sesion}</h3>
-                  <span className="text-sm text-gray-500">{new Date(evol.fecha_sesion).toLocaleString('es-CO')}</span>
+                  <div className="text-right">
+                    <span className="text-sm text-gray-500 block">{new Date(evol.fecha_sesion).toLocaleString('es-CO')}</span>
+                    {evol.asistente_sesion && (
+                      <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-2 py-1 rounded mt-1 inline-block">
+                        Atención: {evol.asistente_sesion}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-3 text-sm">
                   <div>

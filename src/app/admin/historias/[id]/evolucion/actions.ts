@@ -11,6 +11,7 @@ export async function guardarEvolucion(formData: FormData) {
   const evolucion_terapeutica = (formData.get('evolucion') || formData.get('evolucion_terapeutica')) as string
   const observaciones_valoracion = (formData.get('observaciones_valoracion') || '') as string
   const diagnostico_cie10 = (formData.get('diagnostico_cie10') || '') as string
+  const asistente_sesion = (formData.get('asistente_sesion') || null) as string | null
   const fecha_sesion = formData.get('fecha_sesion') ? (formData.get('fecha_sesion') as string) : new Date().toISOString()
 
   const { error } = await supabaseServer
@@ -22,7 +23,8 @@ export async function guardarEvolucion(formData: FormData) {
       fecha_sesion,
       evolucion_terapeutica,
       observaciones_valoracion,
-      diagnostico_cie10
+      diagnostico_cie10,
+      asistente_sesion
     })
 
   if (error) {

@@ -42,6 +42,8 @@ export default async function VerHistoriaPage({ params }: { params: Promise<{ id
   const ex = historia.examen_mental || {}
   const diag = historia.analisis_diagnostico || {}
   const pac = historia.pacientes || {}
+  const demo = historia.datos_demograficos || {}
+  const esPareja = demo.modalidad === 'Pareja'
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -80,7 +82,7 @@ export default async function VerHistoriaPage({ params }: { params: Promise<{ id
         
         {/* Acudiente y EPS */}
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-[#0e787a] mb-4">Datos Generales</h2>
+          <h2 className="text-lg font-bold text-[#0e787a] mb-4">Datos Generales {esPareja ? '(Paciente A)' : ''}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div><span className="font-semibold text-gray-600">Acudiente:</span> <br/>{acudiente.nombre || 'N/A'}</div>
             <div><span className="font-semibold text-gray-600">Parentesco:</span> <br/>{acudiente.parentesco || 'N/A'}</div>
@@ -89,40 +91,164 @@ export default async function VerHistoriaPage({ params }: { params: Promise<{ id
           </div>
         </div>
 
+        {esPareja && (
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-bold text-[#0e787a] mb-4">Datos Generales (Paciente B)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+              <div><span className="font-semibold text-gray-600">Nombre:</span> <br/>{demo.paciente_b_nombre || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">Documento:</span> <br/>{demo.paciente_b_documento || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">Edad:</span> <br/>{demo.paciente_b_edad || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">Email:</span> <br/>{demo.paciente_b_email || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">EPS:</span> <br/>{demo.paciente_b_eps || 'N/A'}</div>
+            </div>
+            <h3 className="text-md font-bold text-[#0e787a] mt-4 mb-2">Datos de la Relación</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div><span className="font-semibold text-gray-600">Tiempo:</span> <br/>{demo.relacion_tiempo || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">Estado Legal:</span> <br/>{demo.relacion_estado_legal || 'N/A'}</div>
+              <div><span className="font-semibold text-gray-600">Hijos:</span> <br/>{demo.relacion_hijos || 'N/A'}</div>
+            </div>
+          </div>
+        )}
+
         {/* Anamnesis */}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
           <h2 className="text-lg font-bold text-[#0e787a] mb-4">Motivo de Consulta y Anamnesis</h2>
           <div className="space-y-4 text-sm">
-            <div>
-              <span className="font-semibold text-gray-600 block mb-1">Motivo de Consulta:</span>
-              <p className="bg-white p-3 border rounded-md">{anamnesis.motivo_consulta}</p>
-            </div>
+            {esPareja ? (
+              <>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Motivo de Consulta (Paciente A):</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.motivo_consulta_a}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Motivo de Consulta (Paciente B):</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.motivo_consulta_b}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Discrepancias o Visión Compartida:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.discrepancias}</p>
+                </div>
+              </>
+            ) : (
+              <div>
+                <span className="font-semibold text-gray-600 block mb-1">Motivo de Consulta:</span>
+                <p className="bg-white p-3 border rounded-md">{anamnesis.motivo_consulta}</p>
+              </div>
+            )}
             <div>
               <span className="font-semibold text-gray-600 block mb-1">Definición del Problema:</span>
               <p className="bg-white p-3 border rounded-md">{anamnesis.definicion_problema}</p>
             </div>
-            <div>
-              <span className="font-semibold text-gray-600 block mb-1">Antecedentes Físicos y Mentales:</span>
-              <p className="bg-white p-3 border rounded-md">{antecedentes.personales_familiares || 'N/A'}</p>
-            </div>
+            {esPareja ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <span className="font-semibold text-[#0e787a] block mb-2 text-md">Antecedentes Clínicos (Paciente A):</span>
+                  <div className="space-y-3">
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Médicos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_a?.medicos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Psiquiátricos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_a?.psiquiatricos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Tratamientos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_a?.tratamientos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Sustancias</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_a?.sustancias || 'N/A'}</p></div>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-semibold text-[#0e787a] block mb-2 text-md">Antecedentes Clínicos (Paciente B):</span>
+                  <div className="space-y-3">
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Médicos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_b?.medicos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Psiquiátricos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_b?.psiquiatricos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Tratamientos</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_b?.tratamientos || 'N/A'}</p></div>
+                    <div><span className="font-semibold text-gray-600 block text-xs uppercase">Sustancias</span><p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.paciente_b?.sustancias || 'N/A'}</p></div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span className="font-semibold text-gray-600 block mb-1">Antecedentes Físicos y Mentales:</span>
+                <p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{antecedentes.personales_familiares || 'N/A'}</p>
+              </div>
+            )}
+            {esPareja && (
+              <>
+                <h3 className="text-md font-bold text-[#0e787a] mt-4 mb-2">Dinámica Relacional</h3>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Historia de la Relación:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.dinamica_historia_relacion || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Comunicación y Resolución de Conflictos:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.dinamica_comunicacion || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Intimidad y Satisfacción Sexual:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.dinamica_intimidad || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Roles y Finanzas:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.dinamica_roles || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-600 block mb-1">Expectativas de Terapia:</span>
+                  <p className="bg-white p-3 border rounded-md">{anamnesis.dinamica_expectativas || 'N/A'}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Examen Mental */}
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-bold text-[#0e787a] mb-4">Examen Mental</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div><span className="font-semibold text-gray-600">Aspecto Físico:</span> {ex.aspecto_fisico}</div>
-            <div><span className="font-semibold text-gray-600">Actitud:</span> {ex.actitud}</div>
-            <div><span className="font-semibold text-gray-600">Estado de Consciencia:</span> {ex.consciencia}</div>
-            <div><span className="font-semibold text-gray-600">Lenguaje:</span> {ex.lenguaje}</div>
-            <div><span className="font-semibold text-gray-600">Orientación:</span> {ex.orientacion}</div>
-            <div><span className="font-semibold text-gray-600">Sensopercepción:</span> {ex.sensopercepcion}</div>
-            <div className="col-span-2"><span className="font-semibold text-gray-600">Pensamiento:</span> {ex.pensamiento}</div>
-            <div className="col-span-2"><span className="font-semibold text-gray-600">Afectividad:</span> {ex.afectividad}</div>
-            <div><span className="font-semibold text-gray-600">Riesgo Suicida:</span> {ex.riesgo_suicida}</div>
-            <div><span className="font-semibold text-gray-600">Consciencia de Enf.:</span> {ex.consciencia_enfermedad}</div>
-          </div>
+          {esPareja ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 divide-x divide-gray-200">
+              <div className="pr-4">
+                <h3 className="font-bold text-[#0e787a] mb-4">Examen Mental (Paciente A)</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="font-semibold text-gray-600">Aspecto Físico:</span> {ex.paciente_a?.aspecto_fisico}</div>
+                  <div><span className="font-semibold text-gray-600">Actitud:</span> {ex.paciente_a?.actitud}</div>
+                  <div><span className="font-semibold text-gray-600">Consciencia:</span> {ex.paciente_a?.consciencia}</div>
+                  <div><span className="font-semibold text-gray-600">Lenguaje:</span> {ex.paciente_a?.lenguaje}</div>
+                  <div><span className="font-semibold text-gray-600">Orientación:</span> {ex.paciente_a?.orientacion}</div>
+                  <div><span className="font-semibold text-gray-600">Sensopercepción:</span> {ex.paciente_a?.sensopercepcion}</div>
+                  <div className="col-span-2"><span className="font-semibold text-gray-600">Pensamiento:</span> {ex.paciente_a?.pensamiento}</div>
+                  <div className="col-span-2"><span className="font-semibold text-gray-600">Afectividad:</span> {ex.paciente_a?.afectividad}</div>
+                  <div><span className="font-semibold text-gray-600">Riesgo Suicida:</span> {ex.paciente_a?.nivel_riesgo_suicida}</div>
+                  <div><span className="font-semibold text-gray-600">Consciencia Enf.:</span> {ex.paciente_a?.consciencia_enfermedad}</div>
+                </div>
+              </div>
+              <div className="pl-4">
+                <h3 className="font-bold text-[#0e787a] mb-4">Examen Mental (Paciente B)</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="font-semibold text-gray-600">Aspecto Físico:</span> {ex.paciente_b?.aspecto_fisico}</div>
+                  <div><span className="font-semibold text-gray-600">Actitud:</span> {ex.paciente_b?.actitud}</div>
+                  <div><span className="font-semibold text-gray-600">Consciencia:</span> {ex.paciente_b?.consciencia}</div>
+                  <div><span className="font-semibold text-gray-600">Lenguaje:</span> {ex.paciente_b?.lenguaje}</div>
+                  <div><span className="font-semibold text-gray-600">Orientación:</span> {ex.paciente_b?.orientacion}</div>
+                  <div><span className="font-semibold text-gray-600">Sensopercepción:</span> {ex.paciente_b?.sensopercepcion}</div>
+                  <div className="col-span-2"><span className="font-semibold text-gray-600">Pensamiento:</span> {ex.paciente_b?.pensamiento}</div>
+                  <div className="col-span-2"><span className="font-semibold text-gray-600">Afectividad:</span> {ex.paciente_b?.afectividad}</div>
+                  <div><span className="font-semibold text-gray-600">Riesgo Suicida:</span> {ex.paciente_b?.nivel_riesgo_suicida}</div>
+                  <div><span className="font-semibold text-gray-600">Consciencia Enf.:</span> {ex.paciente_b?.consciencia_enfermedad}</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div><span className="font-semibold text-gray-600">Aspecto Físico:</span> {ex.aspecto_fisico}</div>
+              <div><span className="font-semibold text-gray-600">Actitud:</span> {ex.actitud}</div>
+              <div><span className="font-semibold text-gray-600">Estado de Consciencia:</span> {ex.consciencia}</div>
+              <div><span className="font-semibold text-gray-600">Lenguaje:</span> {ex.lenguaje}</div>
+              <div><span className="font-semibold text-gray-600">Orientación:</span> {ex.orientacion}</div>
+              <div><span className="font-semibold text-gray-600">Sensopercepción:</span> {ex.sensopercepcion}</div>
+              <div className="col-span-2"><span className="font-semibold text-gray-600">Pensamiento:</span> {ex.pensamiento}</div>
+              <div className="col-span-2"><span className="font-semibold text-gray-600">Afectividad:</span> {ex.afectividad}</div>
+              <div><span className="font-semibold text-gray-600">Riesgo Suicida:</span> {ex.nivel_riesgo_suicida || ex.riesgo_suicida}</div>
+              <div><span className="font-semibold text-gray-600">Consciencia de Enf.:</span> {ex.consciencia_enfermedad}</div>
+            </div>
+          )}
+          {ex.riesgo_vif && (
+            <div className="mt-4 bg-red-50 text-red-700 p-3 rounded border border-red-200 font-bold">
+              ⚠️ RIESGO DE VIOLENCIA DE PAREJA / VIF DETECTADO
+            </div>
+          )}
         </div>
 
         {/* Análisis y Plan */}
