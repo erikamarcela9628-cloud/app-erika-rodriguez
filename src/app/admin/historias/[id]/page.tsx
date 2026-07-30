@@ -1,6 +1,7 @@
 import { supabaseServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import PDFExportButton from './PDFExportButton'
+import SugerirPlanBtn from '../SugerirPlanBtn'
 
 export const metadata = {
   title: 'Ver Historia Clínica | Psicóloga Erika Rodríguez',
@@ -270,8 +271,11 @@ export default async function VerHistoriaPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <div>
-              <span className="font-semibold text-gray-600 block mb-1">Plan de Intervención:</span>
-              <p className="bg-white p-3 border rounded-md">{diag.plan}</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-gray-600">Plan de Intervención:</span>
+                <SugerirPlanBtn historia={historia} evoluciones={evoluciones || []} />
+              </div>
+              <p className="bg-white p-3 border rounded-md whitespace-pre-wrap">{diag.plan}</p>
             </div>
           </div>
         </div>

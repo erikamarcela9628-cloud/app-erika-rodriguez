@@ -180,3 +180,73 @@ Examen mental: ${examenMental}`;
 
   throw new Error(`Error en la API de IA (Sugerencias): ${lastError}`);
 }
+
+export async function generarPlanIntervencionAction({ historiaClinica, evoluciones }: { historiaClinica: any, evoluciones: any[] }) {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
+  }
+
+  const motivoConsulta = historiaClinica.anamnesis?.motivo_consulta || historiaClinica.motivo_consulta || 'No registrado';
+  const definicionProblema = historiaClinica.anamnesis?.definicion_problema || historiaClinica.definicion_problema || 'No registrada';
+  const examenMental = typeof historiaClinica.examen_mental === 'string' 
+    ? historiaClinica.examen_mental 
+    : JSON.stringify(historiaClinica.examen_mental || {});
+
+  const evolucionesTexto = evoluciones && evoluciones.length > 0
+    ? evoluciones.map((evol, index) => {
+        return `Sesión ${index + 1} (${new Date(evol.fecha_sesion).toLocaleDateString()}):
+Evolución: ${evol.evolucion_terapeutica}
+${evol.observaciones_valoracion ? `Observaciones: ${evol.observaciones_valoracion}` : ''}`;
+      }).join('\n\n')
+    : 'No hay evoluciones previas registradas.';
+
+  const prompt = `Actúa como un asistente clínico experto en psicología clínica. Con base en el motivo de consulta, la definición del problema, el examen mental y las evoluciones del paciente, elabora una propuesta técnica de Plan de Intervención Terapéutica. Estructúralo formalmente en:
+1. Objetivo General de Tratamiento.
+2. Objetivos Específicos por Fases (Evaluación, Intervención, Cierre/Prevención).
+3. Enfoque Terapéutico y Técnicas Recomendadas (basadas en evidencia).
+4. Tareas o Actividades para el Paciente entre sesiones.
+
+Mantiene un lenguaje clínico, profesional y conciso en español, sin preámbulos conversacionales.
+
+Motivo de Consulta: ${motivoConsulta}
+Definición del Problema: ${definicionProblema}
+Examen Mental: ${examenMental}
+
+Evoluciones Previas:
+${evolucionesTexto}`;
+
+  const modelsToTry = ['gemini-1.5-flash', 'gemini-3.1-flash-lite', 'gemini-3-flash-preview'];
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }]
+          })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          return text;
+        }
+      } else {
+        const errJson = await response.json();
+        lastError = errJson?.error?.message || response.statusText;
+      }
+    } catch (err: any) {
+      lastError = err?.message;
+    }
+  }
+
+  throw new Error(`Error en la API de IA (Plan Intervención): ${lastError}`);
+}
