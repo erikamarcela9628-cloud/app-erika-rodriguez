@@ -23,10 +23,13 @@ export async function registrarPago(formData: FormData) {
   const randomSuffix = crypto.randomBytes(2).toString('hex').toUpperCase() // 4 caracteres hexadecimales
   const numero_recibo = `REC-${yearMonth}-${randomSuffix}`
 
+  const contrato_id = formData.get('contrato_id') as string
+
   const { error } = await supabaseServer
     .from('pagos')
     .insert({
       paciente_id,
+      contrato_id: contrato_id || null,
       monto,
       metodo_pago,
       referencia: referencia || null,

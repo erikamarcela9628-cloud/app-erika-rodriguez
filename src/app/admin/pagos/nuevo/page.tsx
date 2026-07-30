@@ -9,7 +9,7 @@ export default async function RegistrarPagoPage() {
   // Obtener pacientes para el select
   const { data: pacientes } = await supabaseServer
     .from('pacientes')
-    .select('id, nombre_completo, tipo_documento, numero_documento')
+    .select('id, nombre_completo, tipo_documento, numero_documento, contratos!contratos_paciente_id_fkey(id, modalidad_atencion, estado)')
     .order('nombre_completo', { ascending: true })
 
   return (

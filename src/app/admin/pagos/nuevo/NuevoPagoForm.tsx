@@ -9,6 +9,7 @@ export default function NuevoPagoForm({ pacientes }: { pacientes: any[] }) {
   const [esMenor, setEsMenor] = useState(false)
   const [menorNombre, setMenorNombre] = useState('')
   const [concepto, setConcepto] = useState('')
+  const [selectedPacienteId, setSelectedPacienteId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const router = useRouter()
@@ -49,7 +50,6 @@ export default function NuevoPagoForm({ pacientes }: { pacientes: any[] }) {
         )}
 
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-          {/* Paciente */}
           <div className="sm:col-span-6">
             <label htmlFor="paciente_id" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
               Paciente Registrado
@@ -59,6 +59,8 @@ export default function NuevoPagoForm({ pacientes }: { pacientes: any[] }) {
                 required
                 id="paciente_id"
                 name="paciente_id"
+                value={selectedPacienteId}
+                onChange={(e) => setSelectedPacienteId(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
               >
                 <option value="">Selecciona un paciente...</option>
@@ -70,6 +72,28 @@ export default function NuevoPagoForm({ pacientes }: { pacientes: any[] }) {
               </select>
             </div>
           </div>
+
+          {selectedPacienteId && pacientes?.find((p) => p.id === selectedPacienteId)?.contratos?.length > 0 && (
+            <div className="sm:col-span-6">
+              <label htmlFor="contrato_id" className="block text-sm font-semibold text-slate-800 opacity-100 mb-1">
+                Contrato Asociado al Pago <span className="text-slate-400 font-normal">(Opcional)</span>
+              </label>
+              <div className="mt-1">
+                <select
+                  id="contrato_id"
+                  name="contrato_id"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
+                >
+                  <option value="">Ninguno / Pago Independiente</option>
+                  {pacientes.find((p) => p.id === selectedPacienteId).contratos.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.modalidad_atencion} - Estado: {c.estado}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Menor de edad Checkbox */}
           <div className="sm:col-span-6 flex items-center bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2">

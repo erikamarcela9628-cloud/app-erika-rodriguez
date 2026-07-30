@@ -47,7 +47,8 @@ export async function crearContrato(formData: FormData) {
       .from('pacientes')
       .select('id')
       .eq('numero_documento', numero_documento)
-      .single()
+      .limit(1)
+      .maybeSingle()
 
     if (p1Existente) {
       paciente_id = p1Existente.id
@@ -68,7 +69,8 @@ export async function crearContrato(formData: FormData) {
           telefono: telefono_paciente
         })
         .select('id')
-        .single()
+        .limit(1)
+      .maybeSingle()
       
       if (errC1 || !p1Nuevo) throw new Error(`Error al crear paciente 1: ${errC1?.message}`)
       paciente_id = p1Nuevo.id
@@ -81,7 +83,8 @@ export async function crearContrato(formData: FormData) {
         .from('pacientes')
         .select('id')
         .eq('numero_documento', numero_documento_2)
-        .single()
+        .limit(1)
+      .maybeSingle()
 
       if (p2Existente) {
         paciente_2_id = p2Existente.id
@@ -102,7 +105,8 @@ export async function crearContrato(formData: FormData) {
             telefono: telefono_paciente_2
           })
           .select('id')
-          .single()
+          .limit(1)
+      .maybeSingle()
         
         if (errC2 || !p2Nuevo) throw new Error(`Error al crear paciente 2: ${errC2?.message}`)
         paciente_2_id = p2Nuevo.id
