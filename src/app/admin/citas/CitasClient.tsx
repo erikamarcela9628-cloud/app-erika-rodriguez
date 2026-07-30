@@ -19,7 +19,7 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   // Filtrado general
   const filteredCitas = citas.filter(cita => {
     const term = searchTerm.toLowerCase()
-    const pName = cita.pacientes?.nombre_completo?.toLowerCase() || ''
+    const pName = (cita.pacientes?.nombre_completo || cita.titulo || '').toLowerCase()
     // Buscar también por fecha formateada (ej. 15/05/2026)
     const dStr = new Date(cita.fecha_inicio).toLocaleDateString()
     return pName.includes(term) || dStr.includes(term)
@@ -47,8 +47,9 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
 
   // Función para obtener color según estado
-  const getColorClasses = (estado: string) => {
-    switch(estado) {
+  const getColorClasses = (cita: any) => {
+    if (cita.tipo_evento === 'compromiso_personal') return 'bg-slate-500 text-white border-slate-500'
+    switch(cita.estado) {
       case 'Programada': return 'bg-[#0e787a] text-white border-[#0e787a]'
       case 'Completada': return 'bg-gray-500 text-white border-gray-500'
       case 'Cancelada': 
@@ -57,8 +58,9 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
     }
   }
 
-  const getStatusBadge = (estado: string) => {
-    switch(estado) {
+  const getStatusBadge = (cita: any) => {
+    if (cita.tipo_evento === 'compromiso_personal') return 'bg-slate-100 text-slate-700'
+    switch(cita.estado) {
       case 'Programada': return 'bg-teal-100 text-[#0e787a]'
       case 'Completada': return 'bg-gray-100 text-gray-600'
       case 'Cancelada': 
@@ -70,49 +72,63 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   // Componente de Tarjeta de Cita (Lista)
   const CitaCard = ({ cita }: { cita: any }) => {
     const isProgramada = cita.estado === 'Programada'
+    const isCompromiso = cita.tipo_evento === 'compromiso_personal'
     const dateObj = new Date(cita.fecha_inicio)
     
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-bold text-gray-900">{cita.pacientes?.nombre_completo || 'Desconocido'}</h3>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(cita.estado)}`}>
-              {cita.estado}
+            <h3 className="text-lg font-bold text-gray-900">{isCompromiso ? cita.titulo : (cita.pacientes?.nombre_completo || 'Desconocido')}</h3>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(cita)}`}>
+              {isCompromiso ? 'Compromiso' : cita.estado}
             </span>
           </div>
           
           <div className="text-sm text-gray-600 grid grid-cols-1 md:grid-cols-2 gap-2">
             <div><strong>Fecha:</strong> {dateObj.toLocaleDateString('es-CO')} a las {dateObj.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</div>
             <div><strong>Duración:</strong> {cita.duracion_minutos} min</div>
-            <div><strong>Modalidad:</strong> {cita.modalidad}</div>
+            {cita.modalidad && <div><strong>Modalidad:</strong> {cita.modalidad}</div>}
             {cita.observaciones && <div className="col-span-full"><strong>Notas:</strong> {cita.observaciones}</div>}
           </div>
         </div>
 
         <div className="flex flex-col gap-2 min-w-[200px]">
-          {isProgramada && (
+          {isProgramada && !isCompromiso && (
             <WhatsAppReminderButton cita={cita} />
           )}
           
           <div className="flex gap-2">
-            <button 
-              onClick={() => actualizarEstadoCita(cita.id, 'Completada')}
-              disabled={!isProgramada}
-              className="flex-1 py-1 px-2 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Completar
-            </button>
-            <button 
-              onClick={() => actualizarEstadoCita(cita.id, 'Cancelada')}
-              disabled={!isProgramada}
-              className="flex-1 py-1 px-2 border border-red-300 rounded text-xs font-medium text-red-600 bg-white hover:bg-red-50 disabled:opacity-50"
-            >
-              Cancelar
-            </button>
+            {!isCompromiso && (
+              <>
+                <button 
+                  onClick={() => actualizarEstadoCita(cita.id, 'Completada')}
+                  disabled={!isProgramada}
+                  className="flex-1 py-1 px-2 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Completar
+                </button>
+                <button 
+                  onClick={() => actualizarEstadoCita(cita.id, 'Cancelada')}
+                  disabled={!isProgramada}
+                  className="flex-1 py-1 px-2 border border-red-300 rounded text-xs font-medium text-red-600 bg-white hover:bg-red-50 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
+            {isCompromiso && (
+              <button 
+                onClick={() => actualizarEstadoCita(cita.id, 'Cancelada')}
+                disabled={!isProgramada}
+                className="flex-1 py-1 px-2 border border-red-300 rounded text-xs font-medium text-red-600 bg-white hover:bg-red-50 disabled:opacity-50"
+              >
+                Eliminar
+              </button>
+            )}
           </div>
 
-          {pacientesConHistoria[cita.paciente_id] && (
+          {!isCompromiso && pacientesConHistoria[cita.paciente_id] && (
             <Link 
               href={`/admin/historias/${pacientesConHistoria[cita.paciente_id]}`}
               className="text-center text-xs font-medium text-[#0e787a] hover:underline"
@@ -208,11 +224,11 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                     {dayCitas.map(cita => (
                       <div 
                         key={cita.id} 
-                        title={`${cita.pacientes?.nombre_completo} - ${cita.estado}`}
+                        title={`${cita.tipo_evento === 'compromiso_personal' ? cita.titulo : cita.pacientes?.nombre_completo} - ${cita.estado}`}
                         onClick={() => setSelectedCita(cita)}
-                        className={`text-xs p-1 rounded border truncate cursor-pointer ${getColorClasses(cita.estado)}`}
+                        className={`text-xs p-1 rounded border truncate cursor-pointer ${getColorClasses(cita)}`}
                       >
-                        {new Date(cita.fecha_inicio).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.pacientes?.nombre_completo?.split(' ')[0]}
+                        {new Date(cita.fecha_inicio).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})} {cita.tipo_evento === 'compromiso_personal' ? cita.titulo?.substring(0, 10) : cita.pacientes?.nombre_completo?.split(' ')[0]}
                       </div>
                     ))}
                   </div>
@@ -239,8 +255,8 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
             
             <div className="p-6 space-y-4">
               <div>
-                <p className="text-sm text-gray-500 font-medium">Paciente</p>
-                <p className="text-lg font-bold text-slate-900">{selectedCita.pacientes?.nombre_completo || 'Desconocido'}</p>
+                <p className="text-sm text-gray-500 font-medium">{selectedCita.tipo_evento === 'compromiso_personal' ? 'Compromiso' : 'Paciente'}</p>
+                <p className="text-lg font-bold text-slate-900">{selectedCita.tipo_evento === 'compromiso_personal' ? selectedCita.titulo : (selectedCita.pacientes?.nombre_completo || 'Desconocido')}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -255,14 +271,16 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                     {selectedCita.fecha_fin && ` - ${new Date(selectedCita.fecha_fin).toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'})}`}
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 font-medium">Modalidad</p>
-                  <p className="text-sm font-medium text-slate-900">{selectedCita.modalidad}</p>
-                </div>
+                {selectedCita.modalidad && (
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Modalidad</p>
+                    <p className="text-sm font-medium text-slate-900">{selectedCita.modalidad}</p>
+                  </div>
+                )}
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Estado</p>
-                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusBadge(selectedCita.estado)}`}>
-                    {selectedCita.estado}
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusBadge(selectedCita)}`}>
+                    {selectedCita.tipo_evento === 'compromiso_personal' ? 'Compromiso' : selectedCita.estado}
                   </span>
                 </div>
               </div>
@@ -276,15 +294,30 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
             </div>
 
             <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
-              <Link 
-                href={`/admin/historias/nueva?paciente_id=${selectedCita.paciente_id}`}
-                className="w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] transition-colors"
-              >
-                Atender / Nueva Historia
-              </Link>
-              
-              {selectedCita.estado === 'Programada' && (
-                <WhatsAppReminderButton cita={selectedCita} className="w-full flex justify-center" />
+              {selectedCita.tipo_evento !== 'compromiso_personal' && (
+                <>
+                  <Link 
+                    href={`/admin/historias/nueva?paciente_id=${selectedCita.paciente_id}`}
+                    className="w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] transition-colors"
+                  >
+                    Atender / Nueva Historia
+                  </Link>
+                  
+                  {selectedCita.estado === 'Programada' && (
+                    <WhatsAppReminderButton cita={selectedCita} className="w-full flex justify-center" />
+                  )}
+                </>
+              )}
+              {selectedCita.tipo_evento === 'compromiso_personal' && (
+                 <button
+                   onClick={() => {
+                     actualizarEstadoCita(selectedCita.id, 'Cancelada')
+                     setSelectedCita(null)
+                   }}
+                   className="w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+                 >
+                   Eliminar Compromiso
+                 </button>
               )}
             </div>
           </div>
