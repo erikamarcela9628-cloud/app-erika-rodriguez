@@ -1,11 +1,10 @@
 import { supabaseServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
-import { guardarEvolucion } from './actions'
 import GenerarInformeBtn from './GenerarInformeBtn'
-import TareasCasaClient from './TareasCasaClient'
 import TareasHistorialClient from './TareasHistorialClient'
 import ControlSaldosClient from './ControlSaldosClient'
 import EditarEvolucionModal from './EditarEvolucionModal'
+import NuevaEvolucionForm from './NuevaEvolucionForm'
 
 export const metadata = {
   title: 'Evoluciones Terapéuticas | Psicóloga Erika Rodríguez',
@@ -73,76 +72,23 @@ export default async function EvolucionPage({ params }: { params: Promise<{ id: 
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* Formulario de Nueva Evolución */}
+        {/* Formulario de Nueva Evolución con Protección Offline y Autoguardado */}
         <div className="md:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-24">
-            <div className="px-6 py-4 border-b border-gray-200 bg-[#0e787a] text-white">
-              <h2 className="text-lg font-semibold">Registrar Sesión {vistaSaldo ? sesionPaqueteSiguiente : numSiguienteSesion}</h2>
-            </div>
-            <form action={guardarEvolucion} className="p-6">
-              <input type="hidden" name="historia_clinica_id" value={historia.id} />
-              <input type="hidden" name="paciente_id" value={historia.paciente_id} />
-              <input type="hidden" name="numero_sesion" value={numSiguienteSesion} />
-              {vistaSaldo?.contrato_id && <input type="hidden" name="contrato_id" value={vistaSaldo.contrato_id} />}
-              
-              {vistaSaldo && (
-                <div className="mb-4 bg-blue-50 text-blue-800 text-sm p-3 rounded-lg border border-blue-100 flex items-start gap-2">
-                  <span className="text-lg">ℹ️</span>
-                  <p>
-                    Esta nota corresponderá a la <strong>Sesión {sesionPaqueteSiguiente} de {vistaSaldo.total_sesiones_contratadas}</strong> del paquete contratado.
-                  </p>
-                </div>
-              )}
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800">Fecha de Sesión *</label>
-                  <input required type="datetime-local" name="fecha_sesion" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" />
-                </div>
-
-                {esPareja && (
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-800">Atención realizada a *</label>
-                    <select required name="asistente_sesion" defaultValue="Ambos" className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg shadow-sm focus:ring-[#0e787a]">
-                      <option value="Ambos">👥 Ambos (Conjunta)</option>
-                      <option value="Paciente A">👤 Paciente A (Individual)</option>
-                      <option value="Paciente B">👤 Paciente B (Individual)</option>
-                    </select>
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800">Evolución Detallada *</label>
-                  <textarea required name="evolucion_terapeutica" rows={5} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Temas tratados, técnicas, respuestas del paciente..."></textarea>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800">Observaciones</label>
-                  <textarea name="observaciones_valoracion" rows={3} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Anotaciones extra..."></textarea>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800">Diagnóstico CIE-10 Actualizado</label>
-                  <input type="text" name="diagnostico_cie10" defaultValue={ultimaEvolucion?.diagnostico_cie10 || ''} className="mt-1 w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:ring-[#0e787a]" placeholder="Opcional. Ej: F41.1" />
-                </div>
-
-                <hr className="my-6" />
-
-                <TareasCasaClient
-                  diagnostico={ultimaEvolucion?.diagnostico_cie10 || 'No especificado'}
-                  motivoConsulta={(historia as any)?.anamnesis?.motivo_consulta || (historia as any)?.motivo_consulta || 'No especificado'}
-                  evolucionesRecientes={evoluciones?.slice(0, 2) || []}
-                  tareasPrevias={tareasPrevias}
-                  pacienteNombre={(historia.pacientes as any)?.nombre_completo || ''}
-                  pacienteTelefono={pacienteTelefonoBase}
-                />
-
-                <button type="submit" className="mt-4 w-full bg-[#0e787a] py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:bg-[#0b5c5d]">
-                  Guardar Evolución
-                </button>
-              </div>
-            </form>
-          </div>
+          <NuevaEvolucionForm
+            historiaId={historia.id}
+            pacienteId={historia.paciente_id}
+            numSiguienteSesion={numSiguienteSesion}
+            sesionPaqueteSiguiente={sesionPaqueteSiguiente}
+            contratoId={vistaSaldo?.contrato_id || null}
+            vistaSaldo={vistaSaldo}
+            esPareja={esPareja}
+            ultimaEvolucion={ultimaEvolucion}
+            tareasPrevias={tareasPrevias}
+            pacienteNombre={(historia.pacientes as any)?.nombre_completo || ''}
+            pacienteTelefonoBase={pacienteTelefonoBase}
+            evolucionesRecientes={evoluciones?.slice(0, 2) || []}
+            motivoConsulta={(historia as any)?.anamnesis?.motivo_consulta || (historia as any)?.motivo_consulta || ''}
+          />
         </div>
 
         {/* Historial de Evoluciones */}

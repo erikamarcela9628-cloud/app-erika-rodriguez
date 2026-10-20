@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generateTextAction } from './ai-actions'
 
 interface AITextAreaProps {
@@ -10,12 +10,19 @@ interface AITextAreaProps {
   placeholder?: string
   rows?: number
   seccion: string
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
-export default function AITextArea({ name, label, defaultValue = '', placeholder, rows = 3, seccion }: AITextAreaProps) {
+export default function AITextArea({ name, label, defaultValue = '', placeholder, rows = 3, seccion, onChange }: AITextAreaProps) {
   const [value, setValue] = useState(defaultValue)
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (defaultValue !== undefined && defaultValue !== value) {
+      setValue(defaultValue)
+    }
+  }, [defaultValue])
 
   const handleAI = async () => {
     if (!value.trim()) return
@@ -49,7 +56,10 @@ export default function AITextArea({ name, label, defaultValue = '', placeholder
       <textarea
         name={name}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value)
+          onChange?.(e)
+        }}
         rows={rows}
         className="w-full px-3 py-2 border border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a]"
         placeholder={placeholder}

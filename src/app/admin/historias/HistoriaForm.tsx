@@ -5,6 +5,8 @@ import AITextArea from './AITextArea'
 import SugerirDiagnosticoBtn from './SugerirDiagnosticoBtn'
 import toast from 'react-hot-toast'
 import { maskDocument } from '@/utils/helpers'
+import DraftAutoSaveBanner from '@/components/DraftAutoSaveBanner'
+import { useAutoSaveDraft } from '@/utils/useAutoSaveDraft'
 
 interface HistoriaFormProps {
   pacientes: any[]
@@ -38,6 +40,74 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
   }, [modalidad])
 
   const formRef = useRef<HTMLFormElement>(null)
+
+  const draftKey = initialData?.id ? `historia_${initialData.id}` : 'historia_nueva'
+  const {
+    saveDraft,
+    hasDraft,
+    draftTimestamp,
+    restoreDraft,
+    discardDraft,
+    clearDraft,
+    isOnline,
+    isSavedLocally,
+    lastSavedTime,
+  } = useAutoSaveDraft({
+    key: draftKey,
+  })
+
+  const handleFormChange = () => {
+    if (!formRef.current) return
+    const formData = new FormData(formRef.current)
+    const draft: Record<string, any> = {}
+    formData.forEach((value, key) => {
+      if (typeof value === 'string' && value.trim()) {
+        draft[key] = value
+      }
+    })
+    draft['__meta_modalidad'] = modalidad
+    draft['__meta_fechaNacimiento'] = fechaNacimiento
+    draft['__meta_edadAnos'] = edadAnos
+    draft['__meta_edadMeses'] = edadMeses
+    draft['__meta_esEstudiante'] = esEstudiante
+    draft['__meta_esRemitido'] = esRemitido
+    draft['__meta_riesgoSuicida'] = riesgoSuicida
+    draft['__meta_riesgoSuicidaB'] = riesgoSuicidaB
+    draft['__meta_riesgoVif'] = riesgoVif
+    draft['__meta_cie10'] = cie10
+    draft['__meta_activeTab'] = activeTab
+    saveDraft(draft)
+  }
+
+  const handleRestore = () => {
+    const restored = restoreDraft()
+    if (restored && formRef.current) {
+      if (restored['__meta_modalidad']) setModalidad(restored['__meta_modalidad'])
+      if (restored['__meta_fechaNacimiento']) setFechaNacimiento(restored['__meta_fechaNacimiento'])
+      if (restored['__meta_edadAnos']) setEdadAnos(restored['__meta_edadAnos'])
+      if (restored['__meta_edadMeses']) setEdadMeses(restored['__meta_edadMeses'])
+      if (restored['__meta_esEstudiante'] !== undefined) setEsEstudiante(restored['__meta_esEstudiante'])
+      if (restored['__meta_esRemitido'] !== undefined) setEsRemitido(restored['__meta_esRemitido'])
+      if (restored['__meta_riesgoSuicida']) setRiesgoSuicida(restored['__meta_riesgoSuicida'])
+      if (restored['__meta_riesgoSuicidaB']) setRiesgoSuicidaB(restored['__meta_riesgoSuicidaB'])
+      if (restored['__meta_riesgoVif'] !== undefined) setRiesgoVif(restored['__meta_riesgoVif'])
+      if (restored['__meta_cie10']) setCie10(restored['__meta_cie10'])
+      if (restored['__meta_activeTab']) setActiveTab(restored['__meta_activeTab'])
+
+      Object.keys(restored).forEach((name) => {
+        if (name.startsWith('__meta_')) return
+        const element = formRef.current?.elements.namedItem(name) as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | HTMLSelectElement
+          | null
+        if (element && 'value' in element) {
+          element.value = restored[name]
+        }
+      })
+      toast.success('Borrador de historia clínica restaurado.')
+    }
+  }
   
   // Cálculo de edad
   useEffect(() => {
@@ -129,10 +199,16 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
       return
     }
 
+    if (!navigator.onLine) {
+      toast.error('No hay conexión a internet. Tus datos están a salvo en este navegador, espera a reconectar para guardar.')
+      return
+    }
+
     try {
       setIsSubmitting(true)
       const res = await formAction(formData)
       if (res && res.success) {
+        clearDraft()
         toast.success("Historia clínica guardada exitosamente.");
         window.location.href = `/admin/historias/${res.id}/evolucion`
       } else if (res && !res.success) {
@@ -179,7 +255,17 @@ export default function HistoriaForm({ pacientes, formAction, initialData }: His
         </button>
       </div>
 
-      <form ref={formRef} action={handleSubmit} onKeyDown={handleKeyDown} className="p-8">
+      <form ref={formRef} action={handleSubmit} onKeyDown={handleKeyDown} onChange={handleFormChange} className="p-8">
+        <DraftAutoSaveBanner
+          hasDraft={hasDraft}
+          draftTimestamp={draftTimestamp}
+          onRestore={handleRestore}
+          onDiscard={discardDraft}
+          isOnline={isOnline}
+          isSavedLocally={isSavedLocally}
+          lastSavedTime={lastSavedTime}
+        />
+
         {/* Hidden inputs if editing */}
         {initialData && <input type="hidden" name="id" value={initialData.id} />}
         
