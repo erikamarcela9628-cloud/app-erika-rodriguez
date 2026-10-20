@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import PDFReciboTemplate from '@/components/PDFReciboTemplate'
@@ -16,8 +16,19 @@ interface PagosClientProps {
   gastos: any[]
 }
 
+const formatMonthName = (monthStr: string) => {
+  if (!monthStr || monthStr === 'todos') return 'Todo el Histórico'
+  const [year, month] = monthStr.split('-')
+  const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 15)
+  const name = date.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
 export default function PagosClient({ pagos, pacientes, gastos }: PagosClientProps) {
   const [tab, setTab] = useState<'ingresos' | 'gastos'>('ingresos')
+  const [selectedMonth, setSelectedMonth] = useState<string>('todos')
+  const [showBreakdown, setShowBreakdown] = useState<boolean>(true)
+
   const [showGastoModal, setShowGastoModal] = useState(false)
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, id: string}>({isOpen: false, id: ''})
   const [confirmPagoModal, setConfirmPagoModal] = useState<{isOpen: boolean, id: string}>({isOpen: false, id: ''})
@@ -38,6 +49,120 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
   })
   const [isSubmittingGasto, setIsSubmittingGasto] = useState(false)
   const [gastoError, setGastoError] = useState('')
+
+  // 1. Obtener lista de meses únicos ordenados (más reciente primero)
+  const availableMonths = useMemo(() => {
+    const monthsSet = new Set<string>()
+    pagos.forEach((p) => {
+      const d = p.fecha_pago || p.created_at
+      if (d && typeof d === 'string') monthsSet.add(d.slice(0, 7))
+    })
+    gastos.forEach((g) => {
+      const d = g.fecha_gasto || g.created_at
+      if (d && typeof d === 'string') monthsSet.add(d.slice(0, 7))
+    })
+    return Array.from(monthsSet).sort().reverse()
+  }, [pagos, gastos])
+
+  // 2. Resumen comparativo mes a mes
+  const monthlySummary = useMemo(() => {
+    return availableMonths.map((m) => {
+      const mPagos = pagos.filter((p) => {
+        const d = p.fecha_pago || p.created_at
+        return d && typeof d === 'string' && d.slice(0, 7) === m && p.estado !== 'anulado'
+      })
+      const mGastos = gastos.filter((g) => {
+        const d = g.fecha_gasto || g.created_at
+        return d && typeof d === 'string' && d.slice(0, 7) === m
+      })
+
+      const ingresos = mPagos.reduce(
+        (sum, p) => sum + Number(p.monto) + (Number(p.monto_donacion) || 0),
+        0
+      )
+      const totalGastos = mGastos.reduce((sum, g) => sum + Number(g.monto), 0)
+      const balance = ingresos - totalGastos
+
+      return {
+        monthKey: m,
+        monthName: formatMonthName(m),
+        ingresos,
+        gastos: totalGastos,
+        balance,
+        countPagos: mPagos.length,
+        countGastos: mGastos.length,
+      }
+    })
+  }, [availableMonths, pagos, gastos])
+
+  // 3. Filtrar pagos y gastos según mes seleccionado
+  const filteredPagos = useMemo(() => {
+    if (selectedMonth === 'todos') return pagos
+    return pagos.filter((p) => {
+      const d = p.fecha_pago || p.created_at
+      return d && typeof d === 'string' && d.slice(0, 7) === selectedMonth
+    })
+  }, [pagos, selectedMonth])
+
+  const filteredGastos = useMemo(() => {
+    if (selectedMonth === 'todos') return gastos
+    return gastos.filter((g) => {
+      const d = g.fecha_gasto || g.created_at
+      return d && typeof d === 'string' && d.slice(0, 7) === selectedMonth
+    })
+  }, [gastos, selectedMonth])
+
+  // Métricas para el período seleccionado
+  const totalIngresosPeriodo = useMemo(() => {
+    return filteredPagos
+      .filter((p: any) => p.estado !== 'anulado')
+      .reduce((sum, pago) => sum + Number(pago.monto) + (Number(pago.monto_donacion) || 0), 0)
+  }, [filteredPagos])
+
+  const totalGastosPeriodo = useMemo(() => {
+    return filteredGastos.reduce((sum, gasto) => sum + Number(gasto.monto), 0)
+  }, [filteredGastos])
+
+  const balancePeriodo = totalIngresosPeriodo - totalGastosPeriodo
+
+  // Métricas totales del histórico
+  const totalIngresosHistorico = useMemo(() => {
+    return pagos
+      .filter((p: any) => p.estado !== 'anulado')
+      .reduce((sum, pago) => sum + Number(pago.monto) + (Number(pago.monto_donacion) || 0), 0)
+  }, [pagos])
+
+  const totalGastosHistorico = useMemo(() => {
+    return gastos.reduce((sum, gasto) => sum + Number(gasto.monto), 0)
+  }, [gastos])
+
+  const balanceHistorico = totalIngresosHistorico - totalGastosHistorico
+
+  const formatoMoneda = (val: number) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+
+  // Navegación rápida entre meses
+  const handlePrevMonth = () => {
+    if (selectedMonth === 'todos') {
+      if (availableMonths.length > 0) setSelectedMonth(availableMonths[0])
+      return
+    }
+    const idx = availableMonths.indexOf(selectedMonth)
+    if (idx >= 0 && idx < availableMonths.length - 1) {
+      setSelectedMonth(availableMonths[idx + 1])
+    }
+  }
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 'todos') {
+      if (availableMonths.length > 0) setSelectedMonth(availableMonths[availableMonths.length - 1])
+      return
+    }
+    const idx = availableMonths.indexOf(selectedMonth)
+    if (idx > 0) {
+      setSelectedMonth(availableMonths[idx - 1])
+    }
+  }
 
   // Helper para convertir imagen a base64 usando el proxy existente
   async function getBase64ImageFromUrl(imageUrl: string) {
@@ -103,20 +228,20 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
           pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight)
           heightLeft -= pageHeight
 
-          while (heightLeft > 0) {
+          while (heightLeft >= 0) {
             position = heightLeft - imgHeight
             pdf.addPage()
             pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight)
             heightLeft -= pageHeight
           }
 
-          pdf.save(`${pago.numero_recibo}.pdf`)
-        } catch (err) {
-          console.error("Error generando PDF:", err)
-          toast.error("Error generando el documento PDF.")
-        } finally {
+          pdf.save(`recibo_${pago.numero_recibo}.pdf`)
           setGenerandoPDF(null)
           setPdfData(null)
+        } catch (e) {
+          console.error(e)
+          toast.error("Error al renderizar el documento PDF.")
+          setGenerandoPDF(null)
         }
       }, 500)
     } catch (err) {
@@ -150,6 +275,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
           metodo_pago: 'Efectivo',
           notas: ''
         })
+        toast.success('Gasto registrado exitosamente')
       } else {
         setGastoError(result.error || 'Error desconocido')
       }
@@ -168,6 +294,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
     if (confirmModal.id) {
       await eliminarGasto(confirmModal.id)
       setConfirmModal({isOpen: false, id: ''})
+      toast.success('Gasto eliminado')
     }
   }
 
@@ -176,6 +303,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
       setAuditModal(prev => ({ ...prev, isSubmitting: true }))
       await anularPago(auditModal.id, justificacion)
       setAuditModal({isOpen: false, id: '', isSubmitting: false})
+      toast.success('Pago anulado exitosamente')
     }
   }
 
@@ -187,32 +315,316 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
     if (confirmPagoModal.id) {
       await eliminarPago(confirmPagoModal.id)
       setConfirmPagoModal({isOpen: false, id: ''})
+      toast.success('Pago eliminado permanentemente')
     }
   }
 
-  const totalIngresos = pagos.filter((p: any) => p.estado !== 'anulado').reduce((sum, pago) => sum + Number(pago.monto) + (Number(pago.monto_donacion) || 0), 0)
-  const totalGastos = gastos.reduce((sum, gasto) => sum + Number(gasto.monto), 0)
-  const balanceNeto = totalIngresos - totalGastos
-
-  const formatoMoneda = (val: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-
   return (
-    <div className="space-y-6">
-      {/* Metrics */}
+    <div className="space-y-6 font-sans">
+      
+      {/* Barra de Filtro de Período y Controles */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-500 mr-1 flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-[#0e787a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Filtrar Período:
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setSelectedMonth('todos')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                selectedMonth === 'todos'
+                  ? 'bg-[#0e787a] text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              📊 Todo el Histórico
+            </button>
+
+            <div className="relative inline-block">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="appearance-none bg-white border border-gray-300 text-gray-800 text-xs font-medium rounded-lg pl-3 pr-8 py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0e787a] focus:border-[#0e787a]"
+              >
+                <option value="todos">Todos los meses (Histórico)</option>
+                {availableMonths.map((m) => (
+                  <option key={m} value={m}>
+                    {formatMonthName(m)}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Botones de Navegación Rápida */}
+            {selectedMonth !== 'todos' && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  title="Mes anterior"
+                  disabled={availableMonths.indexOf(selectedMonth) >= availableMonths.length - 1}
+                  className="p-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs transition-colors"
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  title="Mes siguiente"
+                  disabled={availableMonths.indexOf(selectedMonth) <= 0}
+                  className="p-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs transition-colors"
+                >
+                  ▶
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowBreakdown(!showBreakdown)}
+              className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-[#0e787a] bg-teal-50 hover:bg-teal-100 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              {showBreakdown ? 'Ocultar Desglose Mes a Mes' : 'Ver Desglose Mes a Mes'}
+              <span className="ml-1">{showBreakdown ? '▲' : '▼'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Indicador de Filtro Activo */}
+        {selectedMonth !== 'todos' && (
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600">
+            <div>
+              Mostrando finanzas de: <strong className="text-gray-900">{formatMonthName(selectedMonth)}</strong> ({filteredPagos.filter(p => p.estado !== 'anulado').length} ingresos, {filteredGastos.length} egresos)
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedMonth('todos')}
+              className="text-[#0e787a] hover:underline font-semibold"
+            >
+              Restablecer a todo el histórico &times;
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Metrics Cards (Actualizadas dinámicamente según el filtro) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="text-sm font-medium text-gray-500 mb-1">Total Ingresos</div>
-          <div className="text-3xl font-bold text-[#0e787a]">{formatoMoneda(totalIngresos)}</div>
+        {/* Tarjeta Ingresos */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+              {selectedMonth === 'todos' ? 'Total Ingresos (Histórico)' : `Ingresos en ${formatMonthName(selectedMonth)}`}
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">
+              {filteredPagos.filter(p => p.estado !== 'anulado').length} pagos
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold text-[#0e787a] tracking-tight">
+            {formatoMoneda(totalIngresosPeriodo)}
+          </div>
+          {selectedMonth !== 'todos' && (
+            <div className="mt-2 text-xs text-gray-500 border-t border-gray-50 pt-2 flex justify-between">
+              <span>Histórico total:</span>
+              <span className="font-semibold text-gray-700">{formatoMoneda(totalIngresosHistorico)}</span>
+            </div>
+          )}
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="text-sm font-medium text-gray-500 mb-1">Total Gastos (Egresos)</div>
-          <div className="text-3xl font-bold text-red-500">{formatoMoneda(totalGastos)}</div>
+
+        {/* Tarjeta Egresos / Gastos */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+              {selectedMonth === 'todos' ? 'Total Gastos (Histórico)' : `Gastos en ${formatMonthName(selectedMonth)}`}
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700">
+              {filteredGastos.length} egresos
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold text-rose-600 tracking-tight">
+            {formatoMoneda(totalGastosPeriodo)}
+          </div>
+          {selectedMonth !== 'todos' && (
+            <div className="mt-2 text-xs text-gray-500 border-t border-gray-50 pt-2 flex justify-between">
+              <span>Histórico total:</span>
+              <span className="font-semibold text-gray-700">{formatoMoneda(totalGastosHistorico)}</span>
+            </div>
+          )}
         </div>
-        <div className={`bg-white rounded-xl shadow-sm p-6 border border-gray-100`}>
-          <div className="text-sm font-medium text-gray-500 mb-1">Balance Neto</div>
-          <div className={`text-3xl font-bold ${balanceNeto >= 0 ? 'text-[#224252]' : 'text-red-600'}`}>{formatoMoneda(balanceNeto)}</div>
+
+        {/* Tarjeta Balance Neto */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+              {selectedMonth === 'todos' ? 'Balance Neto Acumulado' : `Balance en ${formatMonthName(selectedMonth)}`}
+            </span>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+              balancePeriodo >= 0 ? 'bg-teal-50 text-teal-800' : 'bg-red-50 text-red-700'
+            }`}>
+              {balancePeriodo >= 0 ? 'Superávit' : 'Déficit'}
+            </span>
+          </div>
+          <div className={`text-3xl font-extrabold tracking-tight ${balancePeriodo >= 0 ? 'text-[#224252]' : 'text-red-600'}`}>
+            {formatoMoneda(balancePeriodo)}
+          </div>
+          {selectedMonth !== 'todos' && (
+            <div className="mt-2 text-xs text-gray-500 border-t border-gray-50 pt-2 flex justify-between">
+              <span>Balance histórico total:</span>
+              <span className={`font-semibold ${balanceHistorico >= 0 ? 'text-teal-900' : 'text-red-600'}`}>
+                {formatoMoneda(balanceHistorico)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Desglose Mes a Mes (Tabla de evolución financiera mensual) */}
+      {showBreakdown && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base font-bold text-gray-800">Evolución y Comparativa Mes a Mes</span>
+              <span className="text-xs text-gray-500">({availableMonths.length} meses con registros)</span>
+            </div>
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              Haz clic en cualquier mes para filtrar los registros detallados
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Mes / Año
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Transacciones
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Ingresos
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Egresos
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Balance Neto
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Acción
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {monthlySummary.map((m) => {
+                  const isSelected = selectedMonth === m.monthKey
+                  return (
+                    <tr
+                      key={m.monthKey}
+                      className={`transition-colors ${
+                        isSelected ? 'bg-teal-50/80 font-medium' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <td className="px-6 py-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#0e787a]"></span>}
+                          <span className={`font-semibold ${isSelected ? 'text-[#0e787a]' : 'text-gray-900'}`}>
+                            {m.monthName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center text-xs text-gray-500">
+                        <span className="inline-flex items-center gap-2">
+                          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{m.countPagos} pagos</span>
+                          <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded">{m.countGastos} gastos</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-right font-semibold text-[#0e787a]">
+                        {formatoMoneda(m.ingresos)}
+                      </td>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-right font-semibold text-rose-600">
+                        {formatoMoneda(m.gastos)}
+                      </td>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-right">
+                        <span
+                          className={`font-bold inline-block px-2.5 py-0.5 rounded-full text-xs ${
+                            m.balance >= 0
+                              ? 'bg-teal-100/70 text-teal-900'
+                              : 'bg-rose-100/70 text-rose-900'
+                          }`}
+                        >
+                          {formatoMoneda(m.balance)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 whitespace-nowrap text-center text-xs">
+                        {isSelected ? (
+                          <span className="inline-flex items-center text-xs font-bold text-[#0e787a]">
+                            Activo ✓
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMonth(m.monthKey)}
+                            className="text-xs font-medium text-[#0e787a] hover:text-[#224252] hover:underline"
+                          >
+                            Ver detalle &rarr;
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot className="bg-gray-100 font-bold text-gray-900">
+                <tr>
+                  <td className="px-6 py-3 text-left">TOTAL HISTÓRICO ACUMULADO</td>
+                  <td className="px-6 py-3 text-center text-xs text-gray-600">
+                    {pagos.filter(p => p.estado !== 'anulado').length} pagos / {gastos.length} gastos
+                  </td>
+                  <td className="px-6 py-3 text-right text-[#0e787a]">{formatoMoneda(totalIngresosHistorico)}</td>
+                  <td className="px-6 py-3 text-right text-rose-600">{formatoMoneda(totalGastosHistorico)}</td>
+                  <td className="px-6 py-3 text-right">
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-full text-xs ${
+                        balanceHistorico >= 0
+                          ? 'bg-teal-200 text-teal-950 font-extrabold'
+                          : 'bg-rose-200 text-rose-950 font-extrabold'
+                      }`}
+                    >
+                      {formatoMoneda(balanceHistorico)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-center">
+                    {selectedMonth !== 'todos' && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMonth('todos')}
+                        className="text-xs font-semibold text-[#0e787a] hover:underline"
+                      >
+                        Ver todo
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
@@ -220,21 +632,32 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
           className={`px-6 py-3 text-sm font-medium transition-colors ${tab === 'ingresos' ? 'border-b-2 border-[#0e787a] text-[#0e787a]' : 'text-gray-500 hover:text-gray-700'}`}
           onClick={() => setTab('ingresos')}
         >
-          Ingresos (Pagos de Pacientes)
+          Ingresos ({filteredPagos.length})
         </button>
         <button
           className={`px-6 py-3 text-sm font-medium transition-colors ${tab === 'gastos' ? 'border-b-2 border-[#0e787a] text-[#0e787a]' : 'text-gray-500 hover:text-gray-700'}`}
           onClick={() => setTab('gastos')}
         >
-          Gastos (Egresos)
+          Gastos / Egresos ({filteredGastos.length})
         </button>
       </div>
 
       {/* Table: Ingresos */}
       {tab === 'ingresos' && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-800">Historial de Pagos</h2>
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Historial de Pagos {selectedMonth !== 'todos' ? `— ${formatMonthName(selectedMonth)}` : '(Todo el Histórico)'}
+            </h2>
+            {selectedMonth !== 'todos' && (
+              <button
+                type="button"
+                onClick={() => setSelectedMonth('todos')}
+                className="text-xs font-medium text-[#0e787a] hover:underline"
+              >
+                Mostrar todos los meses
+              </button>
+            )}
           </div>
           
           <div className="overflow-x-auto">
@@ -250,7 +673,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {pagos.map((pago) => {
+                {filteredPagos.map((pago) => {
                   const pacienteInfo = pago.pacientes || pacientes.find(p => p.id === pago.paciente_id)
                   const nombrePaciente = pacienteInfo?.nombre_completo || 'Desconocido'
                   
@@ -260,7 +683,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
                         {pago.numero_recibo} {pago.estado === 'anulado' && <span className="ml-2 text-xs text-red-500 font-bold">(ANULADO)</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(pago.created_at).toLocaleDateString('es-CO')}
+                        {new Date(pago.fecha_pago || pago.created_at).toLocaleDateString('es-CO')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{nombrePaciente}</div>
@@ -335,10 +758,10 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
                     </tr>
                   )
                 })}
-                {pagos.length === 0 && (
+                {filteredPagos.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
-                      No se han registrado pagos.
+                      No se encontraron pagos registrados en {formatMonthName(selectedMonth)}.
                     </td>
                   </tr>
                 )}
@@ -352,13 +775,28 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
       {tab === 'gastos' && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-800">Historial de Gastos</h2>
-            <button
-              onClick={() => setShowGastoModal(true)}
-              className="px-4 py-2 bg-[#0e787a] text-white rounded-md text-sm font-medium hover:bg-[#0b5c5d] transition-colors"
-            >
-              + Registrar Gasto
-            </button>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Historial de Gastos {selectedMonth !== 'todos' ? `— ${formatMonthName(selectedMonth)}` : '(Todo el Histórico)'}
+              </h2>
+            </div>
+            <div className="flex items-center gap-3">
+              {selectedMonth !== 'todos' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonth('todos')}
+                  className="text-xs font-medium text-[#0e787a] hover:underline"
+                >
+                  Mostrar todos los meses
+                </button>
+              )}
+              <button
+                onClick={() => setShowGastoModal(true)}
+                className="px-4 py-2 bg-[#0e787a] text-white rounded-md text-sm font-medium hover:bg-[#0b5c5d] transition-colors"
+              >
+                + Registrar Gasto
+              </button>
+            </div>
           </div>
           
           <div className="overflow-x-auto">
@@ -374,7 +812,7 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {gastos.map((gasto) => (
+                {filteredGastos.map((gasto) => (
                   <tr key={gasto.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(gasto.fecha_gasto).toLocaleDateString('es-CO', { timeZone: 'UTC' })}
@@ -404,10 +842,10 @@ export default function PagosClient({ pagos, pacientes, gastos }: PagosClientPro
                     </td>
                   </tr>
                 ))}
-                {gastos.length === 0 && (
+                {filteredGastos.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
-                      No se han registrado gastos.
+                      No se encontraron gastos registrados en {formatMonthName(selectedMonth)}.
                     </td>
                   </tr>
                 )}
