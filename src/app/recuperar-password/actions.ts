@@ -11,9 +11,17 @@ export async function solicitarRecuperacion(formData: FormData) {
   }
 
   const headerList = await headers()
-  const host = headerList.get('host') || 'localhost:3000'
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : (headerList.get('x-forwarded-proto') || 'http')
-  const origin = `${protocol}://${host}`
+  const forwardedHost = headerList.get('x-forwarded-host')
+  const host = forwardedHost || headerList.get('host') || 'localhost:3000'
+  const protocol = headerList.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http')
+
+  // Si NEXT_PUBLIC_APP_URL está definida en producción (no localhost), la priorizamos
+  let origin = process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
+    ? process.env.NEXT_PUBLIC_APP_URL
+    : `${protocol}://${host}`
+
+  // Asegurar formato correcto de origin sin slash final
+  origin = origin.replace(/\/$/, '')
 
   const supabase = await createClient()
 
