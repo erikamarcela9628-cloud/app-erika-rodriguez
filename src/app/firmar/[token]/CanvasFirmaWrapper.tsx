@@ -3,7 +3,15 @@
 import { useState } from 'react'
 import CanvasFirma from '@/components/CanvasFirma'
 
-export default function CanvasFirmaWrapper({ token, firmante = 'paciente_1' }: { token: string, firmante?: 'paciente_1' | 'paciente_2' | 'tutor_1' | 'tutor_2' | 'menor_asentimiento' }) {
+export default function CanvasFirmaWrapper({ 
+  token, 
+  contratoId, 
+  firmante = 'paciente_1' 
+}: { 
+  token: string
+  contratoId?: string
+  firmante?: 'paciente_1' | 'paciente_2' | 'tutor_1' | 'tutor_2' | 'menor_asentimiento' 
+}) {
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -35,15 +43,10 @@ export default function CanvasFirmaWrapper({ token, firmante = 'paciente_1' }: {
       
       <CanvasFirma 
         tokenContrato={token}
+        contratoId={contratoId}
         firmante={firmante} 
         onSuccess={() => {
           setSuccess(true)
-          // Notificar vía API Route que el contrato fue firmado
-          fetch('/api/contrato/firmado', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, firmante })
-          }).catch(console.error)
         }} 
         onError={setErrorMsg} 
       />

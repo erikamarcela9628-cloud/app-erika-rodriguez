@@ -107,7 +107,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
                   {/* El/La Paciente 1 */}
                   <div className="flex flex-col items-center">
                     <div className="w-full max-w-xs mb-4">
-                      <CanvasFirmaWrapper token={token} firmante="paciente_1" />
+                      <CanvasFirmaWrapper token={token} contratoId={contrato.id} firmante="paciente_1" />
                     </div>
                     
                     <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
@@ -120,7 +120,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
                   {contrato.modalidad_atencion === 'Pareja' && (
                     <div className="flex flex-col items-center">
                       <div className="w-full max-w-xs mb-4">
-                        <CanvasFirmaWrapper token={token} firmante="paciente_2" />
+                        <CanvasFirmaWrapper token={token} contratoId={contrato.id} firmante="paciente_2" />
                       </div>
                       
                       <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
@@ -137,7 +137,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
                   {/* Tutor 1 */}
                   <div className="flex flex-col items-center">
                     <div className="w-full max-w-xs mb-4">
-                      <CanvasFirmaWrapper token={token} firmante="tutor_1" />
+                      <CanvasFirmaWrapper token={token} contratoId={contrato.id} firmante="tutor_1" />
                     </div>
                     
                     <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
@@ -151,7 +151,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
                   {meta.requiere_tutor_2 && (
                     <div className="flex flex-col items-center">
                       <div className="w-full max-w-xs mb-4">
-                        <CanvasFirmaWrapper token={token} firmante="tutor_2" />
+                        <CanvasFirmaWrapper token={token} contratoId={contrato.id} firmante="tutor_2" />
                       </div>
                       
                       <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">
@@ -166,7 +166,7 @@ export default async function FirmarContratoPage({ params }: PageProps) {
                   {meta.requiere_asentimiento && (
                     <div className="flex flex-col items-center">
                       <div className="w-full max-w-xs mb-4">
-                        <CanvasFirmaWrapper token={token} firmante="menor_asentimiento" />
+                        <CanvasFirmaWrapper token={token} contratoId={contrato.id} firmante="menor_asentimiento" />
                       </div>
                       
                       <div className="border-t border-[#224252] w-full max-w-[200px] pt-4 text-center mx-auto">

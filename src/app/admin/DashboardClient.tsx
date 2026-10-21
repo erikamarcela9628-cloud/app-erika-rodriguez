@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { obtenerFirmasContrato } from './contratos/actions'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import PDFContratoTemplate from '@/components/PDFContratoTemplate'
@@ -65,38 +65,11 @@ export default function DashboardClient({ contratos, pacientes }: DashboardClien
     setGenerandoPDF(contrato.id)
 
     try {
-      // 1. Fetch firmas
-      const { data: firmas, error } = await supabase
-        .from('firmas_trazabilidad')
-        .select('*')
-        .eq('contrato_id', contrato.id)
-
-      if (error) throw error
+      // 1. Fetch firmas de manera autenticada y segura desde el servidor
+      const { firmas, firmasBase64 } = await obtenerFirmasContrato(contrato.id)
 
       const paciente1 = pacientes.find(p => p.id === contrato.paciente_id)
       const paciente2 = contrato.paciente_2_id ? pacientes.find(p => p.id === contrato.paciente_2_id) : null
-
-      const getFirmaSrc = (f: any) => f ? (f.firma_base64 || f.imagen_firma || f.url_firma || f.archivo_firma_url) : '';
-
-      const buildSignatureUrl = (firmaUrl: string) => {
-        if (!firmaUrl) return '';
-        if (firmaUrl.startsWith('data:image/')) return firmaUrl;
-        if (firmaUrl.startsWith('http')) return firmaUrl; // Por si guardaron la URL completa
-        const { data } = supabase.storage.from('firmas-contratos').getPublicUrl(firmaUrl);
-        return data.publicUrl;
-      }
-
-      // Procesar TODAS las firmas dinámicamente
-      const firmasBase64: Record<string, string> = {};
-      const fetchFirmasPromises = (firmas || []).map(async (firmaObj) => {
-        const url = buildSignatureUrl(getFirmaSrc(firmaObj));
-        if (url) {
-           const b64 = await getBase64ImageFromUrl(url).catch(() => url);
-           firmasBase64[firmaObj.firmado_por] = b64;
-        }
-      });
-
-      await Promise.all(fetchFirmasPromises);
 
       const [logoB64, psicologaB64] = await Promise.all([
         getBase64ImageFromUrl('/logo-erika.png').catch(()=>'/logo-erika.png'),

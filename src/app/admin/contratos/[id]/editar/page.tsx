@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/server'
 import EditarContratoForm from './EditarContratoForm'
 
 export const metadata = {
@@ -8,6 +8,7 @@ export const metadata = {
 }
 export default async function EditarContratoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   // Obtener el contrato
   const { data: contrato, error: errorContrato } = await supabase

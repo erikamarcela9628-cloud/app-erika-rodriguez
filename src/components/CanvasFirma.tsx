@@ -1,28 +1,20 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
-import { supabase } from '@/lib/supabase'
-import CryptoJS from 'crypto-js'
+import { registrarFirmaAction } from '@/app/firmar/[token]/actions'
 
 interface CanvasFirmaProps {
   tokenContrato: string;
+  contratoId?: string;
   firmante?: 'paciente_1' | 'paciente_2' | 'tutor_1' | 'tutor_2' | 'menor_asentimiento';
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
 
-export default function CanvasFirma({ tokenContrato, firmante = 'paciente_1', onSuccess, onError }: CanvasFirmaProps) {
+export default function CanvasFirma({ tokenContrato, contratoId, firmante = 'paciente_1', onSuccess, onError }: CanvasFirmaProps) {
   const sigCanvas = useRef<SignatureCanvas>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [ipData, setIpData] = useState<string>('unknown')
-
-  useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => setIpData(data.ip))
-      .catch(() => setIpData('0.0.0.0'))
-  }, [])
 
   const clear = () => {
     sigCanvas.current?.clear()
@@ -37,71 +29,25 @@ export default function CanvasFirma({ tokenContrato, firmante = 'paciente_1', on
     setIsSaving(true)
 
     try {
-      // Obtener imagen en base64
       const signatureDataUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png')
-      if (!signatureDataUrl) throw new Error('Error al generar la imagen de la firma')
-
-      const timestamp = new Date().toISOString()
-      const userAgent = navigator.userAgent
-
-      // Generar Hash SHA-256 para inalterabilidad
-      const hashData = `${tokenContrato}-${timestamp}-${ipData}-${userAgent}-${signatureDataUrl}`
-      const hash = CryptoJS.SHA256(hashData).toString()
-
-      // Convertir base64 a Blob para subirlo a Supabase en el navegador
-      const fetchResponse = await fetch(signatureDataUrl)
-      const blob = await fetchResponse.blob()
-      const fileName = `firma_${tokenContrato}_${Date.now()}.png`
-
-      // Subir al bucket privado 'firmas-contratos'
-      const { data: uploadData, error: uploadError } = await supabase
-        .storage
-        .from('firmas-contratos')
-        .upload(fileName, blob, {
-          contentType: 'image/png',
-          cacheControl: '3600',
-          upsert: false
-        })
-      if (uploadError) {
-        throw new Error(`Error al subir firma: ${uploadError.message || 'Error desconocido'}`)
-      }
-      // Obtener ruta del archivo
-      const fileUrl = uploadData.path
-
-      // Obtener el contrato_id asociado a este token
-      const { data: contratoData, error: contratoError } = await supabase
-        .from('contratos')
-        .select('id')
-        .eq('token_acceso', tokenContrato)
-        .single()
-
-      if (contratoError || !contratoData) {
-        throw new Error(`Error al obtener el contrato: ${contratoError?.message || 'Contrato no encontrado'}`)
+      if (!signatureDataUrl) {
+        throw new Error('Error al capturar la imagen de la firma')
       }
 
-      // Registrar en la tabla firmas_trazabilidad
-      const ipOrigen = ipData || '0.0.0.0'
-      const { error: dbError } = await supabase
-        .from('firmas_trazabilidad')
-        .insert({
-          contrato_id: contratoData.id,
-          token_contrato: tokenContrato,
-          hash_firma: hash,
-          hash_sha256: hash,
-          ip_cliente: ipOrigen,
-          ip_origen: ipOrigen,
-          user_agent: userAgent,
-          fecha_firma: timestamp,
-          archivo_firma_url: fileUrl,
-          firma_storage_path: fileUrl,
-          firmado_por: firmante
-        })
-      if (dbError) {
-        throw new Error(`Error en base de datos: ${dbError.message || dbError.details || 'Error desconocido'}`)
+      const res = await registrarFirmaAction({
+        tokenContrato,
+        contratoId,
+        firmante,
+        signatureBase64: signatureDataUrl,
+      })
+
+      if (!res.success) {
+        throw new Error(res.error || 'No se pudo registrar la firma.')
       }
+
       onSuccess?.()
     } catch (err: any) {
-      console.error('Error detallado:', err)
+      console.error('Error procesando firma:', err)
       onError?.(err.message || 'Ocurrió un error al procesar tu firma')
     } finally {
       setIsSaving(false)

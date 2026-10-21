@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { generarPlanIntervencionAction } from './ai-actions'
-import { supabase } from '@/lib/supabase'
+import { generarPlanIntervencionAction, guardarPlanEnHistoriaAction } from './ai-actions'
 import toast from 'react-hot-toast'
 import { copiarAlPortapapeles } from '@/utils/helpers'
 
@@ -41,12 +40,7 @@ export default function SugerirPlanBtn({
       const diag = historia.analisis_diagnostico || {}
       const newDiag = { ...diag, plan: result }
       
-      const { error } = await supabase
-        .from('historias_clinicas')
-        .update({ analisis_diagnostico: newDiag })
-        .eq('id', historia.id)
-
-      if (error) throw error
+      await guardarPlanEnHistoriaAction(historia.id, newDiag)
       
       toast.success('Plan guardado exitosamente en la historia.')
       window.location.reload()

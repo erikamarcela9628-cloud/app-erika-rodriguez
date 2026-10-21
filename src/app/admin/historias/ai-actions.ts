@@ -1,13 +1,14 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function generateTextAction(textoOriginal: string) {
   const supabaseAuth = await createClient()
   const { data: { user } } = await supabaseAuth.auth.getUser()
   if (!user) throw new Error('No autorizado')
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
@@ -65,7 +66,7 @@ Texto original a transformar: "${textoOriginal}"`;
 }
 
 export async function resumenEvolucionAction(evoluciones: any[]) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
@@ -127,7 +128,7 @@ export async function sugerirDiagnosticoAction(motivoConsulta: string, examenMen
   const { data: { user } } = await supabaseAuth.auth.getUser()
   if (!user) throw new Error('No autorizado')
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
@@ -196,7 +197,7 @@ export async function generarPlanIntervencionAction({ historiaClinica, evolucion
   const { data: { user } } = await supabaseAuth.auth.getUser()
   if (!user) throw new Error('No autorizado')
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
@@ -270,7 +271,7 @@ export async function sugerirEjerciciosAction({ diagnostico, motivoConsulta, evo
   const { data: { user } } = await supabaseAuth.auth.getUser()
   if (!user) throw new Error('No autorizado')
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('No se encontró la API Key de Gemini en las variables de entorno.');
@@ -350,4 +351,21 @@ ${tareasTexto}`;
   }
 
   throw new Error(`Error en la API de IA (Sugerir Ejercicios): ${lastError}`);
+}
+
+export async function guardarPlanEnHistoriaAction(historiaId: string, nuevoDiagnostico: any) {
+  const supabaseAuth = await createClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  if (!user) throw new Error('No autorizado')
+
+  const { error } = await supabaseServer
+    .from('historias_clinicas')
+    .update({ analisis_diagnostico: nuevoDiagnostico })
+    .eq('id', historiaId)
+
+  if (error) {
+    throw new Error(`Error al guardar plan: ${error.message}`)
+  }
+
+  return { success: true }
 }
