@@ -3,8 +3,9 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import WhatsAppReminderButton from './WhatsAppReminderButton'
-import { actualizarEstadoCita } from './actions'
+import { actualizarEstadoCita, reagendarCita } from './actions'
 import ConfirmModal from '@/components/ConfirmModal'
+import toast from 'react-hot-toast'
 
 interface CitasClientProps {
   citas: any[]
@@ -17,6 +18,46 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedCita, setSelectedCita] = useState<any>(null)
   const [confirmState, setConfirmState] = useState<{isOpen: boolean, title: string, message: string, action: () => void}>({isOpen: false, title: '', message: '', action: () => {}})
+  
+  // Estado para el modal de reagendar cita
+  const [reagendandoCita, setReagendandoCita] = useState<any>(null)
+  const [nuevaFecha, setNuevaFecha] = useState('')
+  const [nuevaHora, setNuevaHora] = useState('')
+  const [nuevaModalidad, setNuevaModalidad] = useState('Presencial')
+  const [isSubmittingReagendar, setIsSubmittingReagendar] = useState(false)
+
+  const abrirModalReagendar = (cita: any) => {
+    setReagendandoCita(cita)
+    setNuevaFecha(cita.fecha || '')
+    setNuevaHora(cita.hora || '')
+    setNuevaModalidad(cita.modalidad || 'Presencial')
+  }
+
+  const handleConfirmarReagendar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!reagendandoCita || !nuevaFecha || !nuevaHora) {
+      toast.error('Por favor selecciona fecha y hora.')
+      return
+    }
+
+    setIsSubmittingReagendar(true)
+    try {
+      const res = await reagendarCita(reagendandoCita.id, nuevaFecha, nuevaHora, nuevaModalidad)
+      if (!res.success) {
+        toast.error(res.error || 'Error al reagendar')
+        return
+      }
+      toast.success('¡Cita reagendada con éxito!')
+      setReagendandoCita(null)
+      if (selectedCita?.id === reagendandoCita.id) {
+        setSelectedCita(null)
+      }
+    } catch (err: any) {
+      toast.error('Error al reagendar: ' + err.message)
+    } finally {
+      setIsSubmittingReagendar(false)
+    }
+  }
 
   // Filtrado general
   const filteredCitas = citas.filter(cita => {
@@ -120,6 +161,13 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                   className="flex-1 py-1 px-2 border border-gray-300 rounded text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Completar
+                </button>
+                <button 
+                  onClick={() => abrirModalReagendar(cita)}
+                  disabled={!isProgramada}
+                  className="flex-1 py-1 px-2 border border-blue-300 rounded text-xs font-medium text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50"
+                >
+                  Reagendar
                 </button>
                 <button 
                   onClick={() => {
@@ -331,9 +379,17 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
                   </Link>
                   
                   {selectedCita.estado === 'Programada' && (
-                    <div className={new Date(selectedCita.fecha_inicio).getTime() < new Date().getTime() ? 'opacity-50 pointer-events-none w-full' : 'w-full flex justify-center'}>
-                      <WhatsAppReminderButton cita={selectedCita} className="w-full flex justify-center" />
-                    </div>
+                    <>
+                      <button
+                        onClick={() => abrirModalReagendar(selectedCita)}
+                        className="w-full text-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 transition-colors"
+                      >
+                        🗓️ Reagendar Cita
+                      </button>
+                      <div className={new Date(selectedCita.fecha_inicio).getTime() < new Date().getTime() ? 'opacity-50 pointer-events-none w-full' : 'w-full flex justify-center'}>
+                        <WhatsAppReminderButton cita={selectedCita} className="w-full flex justify-center" />
+                      </div>
+                    </>
                   )}
                 </>
               )}
@@ -370,6 +426,79 @@ export default function CitasClient({ citas, pacientesConHistoria }: CitasClient
         }}
         onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
       />
+
+      {/* Modal para Reagendar Cita */}
+      {reagendandoCita && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-[#0e787a] px-6 py-4 text-white">
+              <h3 className="text-lg font-bold">Reagendar Cita</h3>
+              <p className="text-xs text-teal-100 mt-0.5">
+                {reagendandoCita.pacientes?.nombre_completo || reagendandoCita.titulo || 'Paciente'}
+              </p>
+            </div>
+            <form onSubmit={handleConfirmarReagendar} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Nueva Fecha
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={nuevaFecha}
+                  onChange={(e) => setNuevaFecha(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-[#0e787a] focus:border-[#0e787a] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Nueva Hora
+                </label>
+                <input
+                  type="time"
+                  required
+                  value={nuevaHora}
+                  onChange={(e) => setNuevaHora(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-[#0e787a] focus:border-[#0e787a] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Modalidad de Atención
+                </label>
+                <select
+                  value={nuevaModalidad}
+                  onChange={(e) => setNuevaModalidad(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-[#0e787a] focus:border-[#0e787a] outline-none"
+                >
+                  <option value="Presencial">Presencial (Consultorio)</option>
+                  <option value="Virtual">Virtual (Google Meet / Videollamada)</option>
+                </select>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReagendandoCita(null)}
+                  disabled={isSubmittingReagendar}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReagendar}
+                  className="flex-1 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-[#0e787a] hover:bg-[#0b5c5d] transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {isSubmittingReagendar ? 'Guardando...' : 'Confirmar Reagendamiento'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

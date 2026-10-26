@@ -89,3 +89,59 @@ export async function actualizarEstadoCita(citaId: string, nuevoEstado: string) 
     return { success: false, error: 'Error de red o timeout al contactar la base de datos.' }
   }
 }
+
+export async function reagendarCita(citaId: string, nuevaFecha: string, nuevaHora: string, nuevaModalidad?: string) {
+  const supabaseAuth = await createClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  if (!user) throw new Error('No autorizado')
+
+  if (!nuevaFecha || !nuevaHora) {
+    return { success: false, error: 'Fecha y hora son requeridas.' }
+  }
+
+  const fechaInicio = new Date(`${nuevaFecha}T${nuevaHora}:00`)
+
+  try {
+    const { data: currentCita, error: fetchErr } = await supabaseServer
+      .from('citas')
+      .select('duracion_minutos')
+      .eq('id', citaId)
+      .single()
+
+    if (fetchErr || !currentCita) {
+      return { success: false, error: 'Cita no encontrada.' }
+    }
+
+    const duracion = currentCita.duracion_minutos || 60
+    const fechaFin = new Date(fechaInicio.getTime() + duracion * 60000)
+
+    const updatePayload: any = {
+      fecha: nuevaFecha,
+      hora: nuevaHora,
+      fecha_inicio: fechaInicio.toISOString(),
+      fecha_fin: fechaFin.toISOString(),
+      estado: 'Programada',
+      updated_at: new Date().toISOString()
+    }
+
+    if (nuevaModalidad) {
+      updatePayload.modalidad = nuevaModalidad
+    }
+
+    const { error: updateErr } = await supabaseServer
+      .from('citas')
+      .update(updatePayload)
+      .eq('id', citaId)
+
+    if (updateErr) {
+      console.error('Error reagendando cita:', updateErr)
+      return { success: false, error: 'No se pudo reagendar: ' + updateErr.message }
+    }
+
+    revalidatePath('/admin/citas')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error al reagendar cita:', error)
+    return { success: false, error: error?.message || 'Error al reagendar cita.' }
+  }
+}
