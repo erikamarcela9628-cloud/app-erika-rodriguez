@@ -1,0 +1,322 @@
+{
+  "name": "Abigail - Asistente IA Dra. Erika Rodríguez (Chatwoot + Google Calendar + App)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-erika",
+        "options": {}
+      },
+      "id": "webhook-chatwoot",
+      "name": "Chatwoot Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "chatwoot-erika"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-2",
+              "leftValue": "={{ $json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-3",
+              "leftValue": "={{ $json.body.private }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filtro-mensajes",
+      "name": "Solo Mensajes Entrantes",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f-1",
+              "name": "conversation_id",
+              "value": "={{ $json.body.conversation.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f-2",
+              "name": "account_id",
+              "value": "={{ $json.body.account.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f-3",
+              "name": "sender_name",
+              "value": "={{ $json.body.sender.name || 'Paciente' }}",
+              "type": "string"
+            },
+            {
+              "id": "f-4",
+              "name": "sender_phone",
+              "value": "={{ $json.body.sender.phone_number || $json.body.conversation.meta.sender.phone_number || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f-5",
+              "name": "user_message",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "preparar-datos",
+      "name": "Preparar Datos Chatwoot",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [640, 280]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}",
+        "options": {
+          "systemMessage": "Eres Abigail, la asistente virtual y coordinadora de citas de la Dra. Erika Marcela Rodríguez López, Psicóloga Profesional (Tarjeta Profesional No. 244628). Tu propósito es brindar una atención cálida, humana, empática y profesional a las personas que consultan por WhatsApp, ayudándolas a resolver dudas sobre las consultas y a coordinar sus citas.\n\n==================================================\n1. PERSONALIDAD Y TONO DE COMUNICACIÓN\n==================================================\n- Tono: Muy empático, cálido, respetuoso y profesional (estilo colombiano amable, usando 'tú' de forma cercana pero respetuosa).\n- Formato para WhatsApp: Mensajes concisos, directos y fáciles de leer en pantalla de celular. Usa saltos de línea para que no sean bloques pesados de texto. Usa emojis de manera sobria y profesional (ej: 👋, 🩺, 🗓️, 💳).\n- Jamás des un diagnóstico psicológico ni hagas terapia por chat. Tu función es administrativa, de orientación y agendamiento.\n\n==================================================\n2. FILTRO DE INTENCIÓN (REGLA DE ENTRADA)\n==================================================\n- SI la persona pregunta por citas, consultas, precios, horarios, terapia, información de psicología o quiere reagendar:\n  -> Atiéndela tú con total amabilidad y sigue el proceso de agendamiento.\n- SI la persona NO está preguntando por servicios de psicología (por ejemplo, asuntos personales, amigos de la doctora, proveedores, temas bancarios o personas que ya están en otra conversación):\n  -> Responde con amabilidad:\n     '¡Hola! Con mucho gusto. Le dejo una nota a la Dra. Erika para que ella personalmente te responda en un momento. ¡Que tengas un excelente día! 😊'\n  -> Y detén tu intervención.\n\n==================================================\n3. PROTOCOLO DE LÍNEAS ROJAS / EMERGENCIAS (VITAL)\n==================================================\nSi el usuario manifiesta estar en una crisis emocional severa, ideación suicida, autolesiones o una emergencia médica urgente:\n- NO intentes agendar una cita regular.\n- Responde de inmediato con empatía y claridad:\n  'Entiendo que estás pasando por un momento muy difícil y quiero que sepas que no estás solo(a). La consulta psicológica de la Dra. Erika funciona por citas programadas y NO es un servicio de urgencias médicas inmediatas.\n  \n  Por favor, comunícate de inmediato con estos canales gratuitos de atención 24/7 donde profesionales te atenderán en este mismo instante:\n  📞 Línea 106 (Salud Mental Colombia)\n  🚨 Línea 123 (Emergencias Nacional)\n  💬 WhatsApp de apoyo psicológico: (+57) 300 754 8933\n  \n  Por favor acude al centro de salud o urgencias más cercano. Tu bienestar y tu vida son lo más valioso.'\n\n==================================================\n4. SERVICIOS, TARIFAS Y ENFOQUE CLÍNICO\n==================================================\n- Enfoque fuerte de la doctora: Especialista en Autoestima, Crecimiento Personal y Terapia de Pareja.\n- Modalidades y Precios:\n  * Consulta Individual Adultos (Presencial o Virtual): $120.000 COP\n  * Consulta Niños o Adolescentes: $150.000 COP\n  * Terapia de Pareja (Presencial o Virtual): $180.000 COP\n- Duración: 60 minutos por sesión.\n- Paquetes de sesiones: Si el paciente pregunta por paquetes o promociones, explícale:\n  'La doctora maneja paquetes de sesiones con tarifas especiales, los cuales se definen directamente en la primera sesión de valoración, ya que allí la doctora evalúa cuántas sesiones requieres y con qué frecuencia.'\n\n==================================================\n5. HORARIOS Y DISPONIBILIDAD\n==================================================\n- Martes: Exclusivamente VIRTUAL (de 10:00 AM a 8:00 PM).\n- Miércoles, Jueves y Viernes:\n  * Presencial: de 10:00 AM a 7:00 PM.\n  * Virtual: de 10:00 AM a 8:00 PM.\n- Lunes, Sábados y Domingos: La agenda regular no atiende al público.\n- Intervalo entre sesiones: 15 minutos (las citas inician en punto o según los bloques libres disponibles).\n- IMPORTANTE: Siempre consulta tu herramienta de disponibilidad en Google Calendar antes de proponer horarios específicos. Ofrece al paciente 2 o 3 opciones concretas.\n\n==================================================\n6. PROCESO DE AGENDAMIENTO Y MEDIOS DE PAGO\n==================================================\nPaso 1: Entender qué tipo de consulta busca (Individual adulto, pareja o infantil/adolescente) y si prefiere modalidad Presencial o Virtual.\nPaso 2: Proponer 2 o 3 horarios disponibles según Google Calendar.\nPaso 3: Una vez que el paciente escoja la fecha y hora, solicitar sus datos para reservar:\n  1. Nombre completo.\n  2. Número de cédula (o documento de identidad).\n  3. Correo electrónico.\nPaso 4: Presentar la información de abono para apartar el cupo:\n  'Para apartar y confirmar tu espacio en la agenda de la doctora, solicitamos un abono previo del 50% del valor de la sesión (el 50% restante lo cancelas el día de la consulta).\n  \n  Puedes realizarlo a cualquiera de estas opciones:\n  \n  📱 Nequi: 3043542231 (Dubian López)\n  📱 Daviplata: 3219315490\n  🏦 Bancolombia (Ahorros): 36458946129\n  ⚡ Llave Bre-B: @plata3219315490\n  \n  Una vez realizado el abono, por favor envíanos la imagen del comprobante por este medio para confirmar tu cita oficialmente en el sistema.'\nPaso 5: Registrar la cita en Google Calendar y en el software clínico de la doctora mediante tu herramienta guardar_cita_en_sistema_clinico.\n\n==================================================\n7. REAGENDAMIENTO Y CANCELACIONES\n==================================================\n- Política de tiempo: El paciente debe solicitar el reagendamiento o cancelación con mínimo 6 HORAS DE ANTICIPACIÓN a la cita.\n- Si escribe con más de 6 horas de anticipación: Atiéndelo amablemente, busca un nuevo horario disponible y reagéndalo usando tu herramienta.\n- Si escribe con menos de 6 horas de anticipación: Infórmale con calidez que, de acuerdo con las políticas de la consulta, los cambios con menos de 6 horas no permiten la devolución del abono debido al tiempo reservado de la profesional, pero que le dejarás una nota a la doctora para evaluar su caso."
+        }
+      },
+      "id": "ai-agent-abigail",
+      "name": "Abigail (Agente de IA)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [880, 280]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "openai-model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [800, 480],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-cred",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Preparar Datos Chatwoot').item.json.conversation_id }}"
+      },
+      "id": "memory-buffer",
+      "name": "Memoria de Conversacion",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [940, 480]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list",
+          "cachedResultName": "primary"
+        },
+        "returnAll": true,
+        "options": {
+          "timeMin": "={{ $fromAI('fecha_inicio', 'Fecha inicial en formato ISO YYYY-MM-DDTHH:mm:ssZ para consultar disponibilidad') }}",
+          "timeMax": "={{ $fromAI('fecha_fin', 'Fecha final en formato ISO YYYY-MM-DDTHH:mm:ssZ para consultar disponibilidad') }}"
+        }
+      },
+      "id": "tool-calendar-check",
+      "name": "consultar_disponibilidad_calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [1100, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.erikarodriguezpsicologa.com/api/webhooks/agendamiento",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-webhook-secret",
+              "value": "erika-agendamiento-secret-2026"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"agendar\",\n  \"paciente\": {\n    \"nombre\": \"{{ $fromAI('nombre', 'Nombre completo del paciente') }}\",\n    \"telefono\": \"{{ $('Preparar Datos Chatwoot').item.json.sender_phone }}\",\n    \"email\": \"{{ $fromAI('email', 'Correo electronico del paciente') }}\",\n    \"documento\": \"{{ $fromAI('documento', 'Numero de documento o cedula') }}\"\n  },\n  \"cita\": {\n    \"fecha\": \"{{ $fromAI('fecha', 'Fecha de la cita en formato YYYY-MM-DD') }}\",\n    \"hora\": \"{{ $fromAI('hora', 'Hora de la cita en formato HH:mm') }}\",\n    \"modalidad\": \"{{ $fromAI('modalidad', 'Presencial o Virtual') }}\",\n    \"titulo\": \"Consulta Psicologica\",\n    \"observaciones\": \"{{ $fromAI('observaciones', 'Notas o motivo de consulta') }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "tool-guardar-cita-app",
+      "name": "guardar_cita_en_sistema_clinico",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1260, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://tu-dominio-chatwoot.com/api/v1/accounts/{{ $('Preparar Datos Chatwoot').item.json.account_id }}/conversations/{{ $('Preparar Datos Chatwoot').item.json.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "TU_CHATWOOT_API_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify($json.output) }},\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "enviar-chatwoot",
+      "name": "Enviar Respuesta a Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1220, 280]
+    }
+  ],
+  "connections": {
+    "Chatwoot Webhook": {
+      "main": [
+        [
+          {
+            "node": "Solo Mensajes Entrantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solo Mensajes Entrantes": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Abigail (Agente de IA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Abigail (Agente de IA)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria de Conversacion": {
+      "ai_memory": [
+        [
+          {
+            "node": "Abigail (Agente de IA)",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_disponibilidad_calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Abigail (Agente de IA)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "guardar_cita_en_sistema_clinico": {
+      "ai_tool": [
+        [
+          {
+            "node": "Abigail (Agente de IA)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abigail (Agente de IA)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta a Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
